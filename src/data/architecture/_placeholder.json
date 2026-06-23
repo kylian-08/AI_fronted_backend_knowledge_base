@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "status": "placeholder",
+  "diagramType": "tbd",
+  "schema": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "id": "string",
+        "type": "service | database | queue | client",
+        "label": { "zh-CN": "string", "en-US": "string" },
+        "position": { "x": "number", "y": "number" }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "from": "string",
+        "to": "string",
+        "label": "string"
+      }
+    }
+  },
+  "futureFeatures": [
+    "drag-and-drop node editor",
+    "mermaid export",
+    "png export",
+    "prompt generation from blueprint"
+  ]
+}
