@@ -6,28 +6,37 @@ import {
   Layers,
   Network,
   Palette,
+  RotateCcw,
   Search,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/useMediaQuery'
-
-const navItems = [
-  { to: '/', label: '首页', icon: Home, end: true },
-  { to: '/styles', label: '风格', icon: Palette },
-  { to: '/components', label: '组件', icon: Boxes },
-  { to: '/backend', label: '后端', icon: Layers },
-  { to: '/composer', label: '组合', icon: Combine },
-  { to: '/architecture', label: '架构', icon: Network },
-]
+import { LanguageSwitcher } from '@/components/layout/LanguageSwitcher'
+import { useApp } from '@/contexts/AppContext'
+import { Button } from '@/components/ui/button'
 
 export function Sidebar() {
+  const { t, appliedStyleId, resetTheme } = useApp()
+
+  const navItems = [
+    { to: '/', label: t('nav.home'), icon: Home, end: true },
+    { to: '/styles', label: t('nav.styles'), icon: Palette },
+    { to: '/components', label: t('nav.components'), icon: Boxes },
+    { to: '/backend', label: t('nav.backend'), icon: Layers },
+    { to: '/composer', label: t('nav.composer'), icon: Combine },
+    { to: '/architecture', label: t('nav.architecture'), icon: Network },
+  ]
+
   return (
-    <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
+    <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
       <div className="flex h-14 items-center gap-2 border-b border-border px-4">
         <Search className="h-5 w-5 text-primary" />
-        <span className="font-semibold">Prompt Assistant</span>
+        <div className="flex flex-col">
+          <span className="font-semibold leading-tight">{t('app.title')}</span>
+          <span className="text-[10px] text-muted-foreground">v{__APP_VERSION__}</span>
+        </div>
       </div>
-      <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="主导航">
+      <nav className="flex flex-1 flex-col gap-1 p-3" aria-label="Main navigation">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}
@@ -47,20 +56,38 @@ export function Sidebar() {
           </NavLink>
         ))}
       </nav>
+      {appliedStyleId && (
+        <div className="border-t border-border p-3">
+          <Button variant="outline" size="sm" className="w-full gap-2" onClick={resetTheme}>
+            <RotateCcw className="h-3.5 w-3.5" />
+            {t('theme.reset')}
+          </Button>
+        </div>
+      )}
     </aside>
   )
 }
 
 export function MobileTabBar() {
   const isMobile = useIsMobile()
+  const { t } = useApp()
+
+  const navItems = [
+    { to: '/', label: t('nav.home'), icon: Home, end: true },
+    { to: '/styles', label: t('nav.styles'), icon: Palette },
+    { to: '/components', label: t('nav.components'), icon: Boxes },
+    { to: '/backend', label: t('nav.backend'), icon: Layers },
+    { to: '/composer', label: t('nav.composer'), icon: Combine },
+  ]
+
   if (!isMobile) return null
 
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-border bg-card md:hidden"
-      aria-label="底部导航"
+      aria-label="Bottom navigation"
     >
-      {navItems.slice(0, 5).map(({ to, label, icon: Icon, end }) => (
+      {navItems.map(({ to, label, icon: Icon, end }) => (
         <NavLink
           key={to}
           to={to}
@@ -81,13 +108,16 @@ export function MobileTabBar() {
 }
 
 export function Header({ children }: { children?: React.ReactNode }) {
+  const { t } = useApp()
+
   return (
-    <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <header className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="flex items-center gap-2 md:hidden">
         <Search className="h-5 w-5 text-primary" />
-        <span className="font-semibold text-sm">Prompt Assistant</span>
+        <span className="font-semibold text-sm">{t('app.title')}</span>
       </div>
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 min-w-0">{children}</div>
+      <LanguageSwitcher />
     </header>
   )
 }

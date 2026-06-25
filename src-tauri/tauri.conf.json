@@ -5,12 +5,12 @@
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
     "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run build:tauri"
   },
   "app": {
     "windows": [
       {
-        "title": "Prompt Assistant",
+        "title": "Prompt Assistant v0.2.0",
         "width": 1280,
         "height": 800,
         "resizable": true

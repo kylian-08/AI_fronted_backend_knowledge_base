@@ -8,9 +8,10 @@ interface CopyButtonProps {
   text: string
   className?: string
   label?: string
+  copiedLabel?: string
 }
 
-export function CopyButton({ text, className, label }: CopyButtonProps) {
+export function CopyButton({ text, className, label, copiedLabel }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
 
   async function handleCopy() {
@@ -30,7 +31,7 @@ export function CopyButton({ text, className, label }: CopyButtonProps) {
       aria-label={label ?? 'Copy to clipboard'}
     >
       {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-      {copied ? '已复制' : '复制'}
+      {copied ? (copiedLabel ?? 'Copied') : (label ?? 'Copy')}
     </Button>
   )
 }

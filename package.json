@@ -1,15 +1,15 @@
 {
   "name": "prompt-assistant",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "dev:desktop": "tauri dev",
     "build": "tsx scripts/export-search-index.ts && tsc -b && vite build",
-    "build:desktop": "npm run build && tauri build",
-    "build:desktop:portable": "npm run build && tauri build --no-bundle",
-    "build:desktop:win": "npm run build && tauri build --target x86_64-pc-windows-msvc",
+    "build:tauri": "tsx scripts/export-search-index.ts && tsc -b && vite build --mode tauri",
+    "build:desktop": "tauri build",
+    "build:desktop:portable": "tauri build --no-bundle",
     "preview": "vite preview",
     "lint": "eslint .",
     "validate:prompts": "node scripts/validate-prompts.mjs"
@@ -24,6 +24,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "fuse.js": "^7.4.2",
+    "html-to-image": "^1.11.13",
     "lucide-react": "^1.21.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

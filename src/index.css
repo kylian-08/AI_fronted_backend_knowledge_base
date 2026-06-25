@@ -35,6 +35,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+html[data-theme-mode='glass'] body {
+  background: var(--app-bg-gradient);
+  background-attachment: fixed;
+}
+
+html[data-theme-mode='glass'] aside,
+html[data-theme-mode='glass'] header,
+html[data-theme-mode='glass'] nav.fixed {
+  backdrop-filter: var(--app-backdrop, blur(12px));
+  -webkit-backdrop-filter: var(--app-backdrop, blur(12px));
+}
+
+html[data-theme-mode='glass'] .rounded-lg.border.bg-card {
+  backdrop-filter: var(--app-backdrop, blur(12px));
+  -webkit-backdrop-filter: var(--app-backdrop, blur(12px));
+}
+
 :focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;

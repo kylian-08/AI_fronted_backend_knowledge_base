@@ -26,6 +26,10 @@ export interface StyleItem extends CatalogItem {
   kind: 'style'
   tokens: Record<string, string>
   showcaseVariant?: string
+  /** Optional reference image: external URL or base64 data URI. */
+  referenceImage?: string
+  /** Marks user-imported styles (vs bundled catalog). */
+  source?: 'bundled' | 'imported'
 }
 
 export interface ComponentItem extends CatalogItem {

@@ -1,47 +1,68 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Check } from 'lucide-react'
 import { Layout, Header } from '@/components/layout/Layout'
 import { SearchBar } from '@/components/catalog/SearchBar'
 import { FilterChips } from '@/components/catalog/FilterChips'
-import { PromptCard } from '@/components/catalog/PromptCard'
-import { useCatalogSearch } from '@/hooks/useCatalogSearch'
+import { StyleCard } from '@/components/catalog/StyleCard'
+import { StyleImportPanel } from '@/components/catalog/StyleImportPanel'
+import { Pagination } from '@/components/catalog/Pagination'
+import { SidePager, usePageKeys } from '@/components/catalog/SidePager'
+import { CopyButton } from '@/components/catalog/CopyButton'
+import { CopyImageButton, DownloadImageButton } from '@/components/catalog/CopyImageButton'
+import { useStyleFilter } from '@/hooks/useStyleFilter'
 import { useIsDesktop, useIsMobile } from '@/hooks/useMediaQuery'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components/ui/tabs'
 import { ShowcaseShell } from '@/components/showcase/ShowcaseShell'
 import { PromptPanel } from '@/components/preview/PromptPanel'
+import { Button } from '@/components/ui/button'
 import { getStyleById } from '@/data/styles/registry'
-import { localized } from '@/lib/i18n'
+import { useApp } from '@/contexts/AppContext'
 import { useParams } from 'react-router-dom'
 
 export function StylesListPage() {
-  const { query, setQuery, selectedTags, setSelectedTags, results, allTags, loading } =
-    useCatalogSearch('style')
+  const { allStyles, t } = useApp()
+  const {
+    query,
+    setQuery,
+    selectedTags,
+    setSelectedTags,
+    paginated,
+    allTags,
+    page,
+    setPage,
+    totalPages,
+    total,
+  } = useStyleFilter(allStyles)
+
+  usePageKeys(page, totalPages, setPage)
 
   return (
     <Layout>
       <Header>
-        <SearchBar value={query} onChange={setQuery} />
+        <SearchBar value={query} onChange={setQuery} placeholder={t('search.placeholder')} />
       </Header>
-      <main className="flex-1 p-4 md:p-6">
-        <h1 className="mb-4 text-xl font-bold">UI 风格</h1>
+      <SidePager page={page} totalPages={totalPages} onPageChange={setPage} />
+      <main className="flex-1 p-4 md:p-6 lg:px-20">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl font-bold">{t('styles.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('styles.count', { n: total })}</p>
+          </div>
+          <StyleImportPanel />
+        </div>
         <FilterChips
           tags={allTags}
           selected={selectedTags}
           onChange={setSelectedTags}
           className="mb-4"
         />
-        {loading ? (
-          <p className="text-muted-foreground">加载中...</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((item) => (
-              <PromptCard key={item.id} item={item} />
-            ))}
-          </div>
-        )}
-        {!loading && results.length === 0 && (
-          <p className="text-muted-foreground">未找到匹配的风格</p>
-        )}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {paginated.map((style) => (
+            <StyleCard key={style.id} style={style} />
+          ))}
+        </div>
+        {total === 0 && <p className="text-muted-foreground">{t('styles.empty')}</p>}
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </main>
     </Layout>
   )
@@ -52,26 +73,25 @@ export function StyleDetailPage() {
   const style = getStyleById(id ?? '')
   const isMobile = useIsMobile()
   const isDesktop = useIsDesktop()
+  const { t, tr, appliedStyleId, applyStyle } = useApp()
 
   if (!style) {
     return (
       <Layout>
         <main className="p-8 text-center">
-          <p>风格未找到</p>
+          <p>{t('styles.empty')}</p>
           <Link to="/styles" className="text-primary underline">
-            返回列表
+            {t('styles.back')}
           </Link>
         </main>
       </Layout>
     )
   }
 
+  const isApplied = appliedStyleId === style.id
   const preview = <ShowcaseShell style={style} />
   const prompt = (
-    <PromptPanel
-      promptZh={style.prompt['zh-CN']}
-      promptEn={style.prompt['en-US']}
-    />
+    <PromptPanel promptZh={style.prompt['zh-CN']} promptEn={style.prompt['en-US']} />
   )
 
   return (
@@ -82,27 +102,55 @@ export function StyleDetailPage() {
           className="inline-flex min-h-[44px] items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
-          返回风格列表
+          {t('styles.back')}
         </Link>
       </Header>
       <main className="flex-1 p-4 md:p-6">
-        <div className="mb-4">
-          <h1 className="text-xl font-bold">{localized(style.title)}</h1>
-          <p className="text-sm text-muted-foreground">{localized(style.description)}</p>
-          <div className="mt-2 flex flex-wrap gap-1">
-            {style.tags.map((tag) => (
-              <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs">
-                {tag}
-              </span>
-            ))}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h1 className="text-xl font-bold">{tr(style.title)}</h1>
+            <p className="text-sm text-muted-foreground">{tr(style.description)}</p>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {style.tags.map((tag) => (
+                <span key={tag} className="rounded-full bg-muted px-2 py-0.5 text-xs">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={isApplied ? 'secondary' : 'default'}
+              onClick={() => applyStyle(style)}
+              className="gap-2"
+            >
+              {isApplied && <Check className="h-4 w-4" />}
+              {isApplied ? t('styles.applied') : t('styles.apply')}
+            </Button>
+            <CopyButton text={tr(style.prompt)} label={t('styles.copy')} copiedLabel={t('styles.copied')} />
+            <CopyImageButton style={style} label={t('styles.copyImage')} copiedLabel={t('styles.copied')} />
+            <DownloadImageButton style={style} label={t('styles.downloadImage')} />
           </div>
         </div>
+
+        {style.referenceImage && (
+          <div className="mb-6">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {t('styles.reference')}
+            </p>
+            <img
+              src={style.referenceImage}
+              alt={tr(style.title)}
+              className="max-h-80 w-full rounded-xl border border-border object-contain"
+            />
+          </div>
+        )}
 
         {isMobile ? (
           <TabsRoot defaultValue="preview">
             <TabsList className="mb-4 w-full">
               <TabsTrigger value="preview" className="flex-1">
-                预览
+                Preview
               </TabsTrigger>
               <TabsTrigger value="prompt" className="flex-1">
                 Prompt
@@ -112,13 +160,7 @@ export function StyleDetailPage() {
             <TabsContent value="prompt">{prompt}</TabsContent>
           </TabsRoot>
         ) : (
-          <div
-            className={
-              isDesktop
-                ? 'grid grid-cols-2 gap-6'
-                : 'flex flex-col gap-6'
-            }
-          >
+          <div className={isDesktop ? 'grid grid-cols-2 gap-6' : 'flex flex-col gap-6'}>
             <div>{preview}</div>
             <div>{prompt}</div>
           </div>

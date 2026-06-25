@@ -1,7 +1,7 @@
 import { writeFileSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { styles } from '../src/data/styles/registry.ts'
+import { bundledStyles } from '../src/data/styles/registry.ts'
 import { components } from '../src/data/components/registry.ts'
 import { backendItems } from '../src/data/backend/registry.ts'
 import type { SearchIndexEntry } from '../src/types/catalog.ts'
@@ -38,7 +38,7 @@ function toEntry(item: {
 }
 
 const index: SearchIndexEntry[] = [
-  ...styles.map(toEntry),
+  ...bundledStyles.map(toEntry),
   ...components.map(toEntry),
   ...backendItems.map(toEntry),
 ]

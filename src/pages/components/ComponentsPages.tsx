@@ -1,37 +1,90 @@
+import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import Fuse from 'fuse.js'
 import { Layout, Header } from '@/components/layout/Layout'
 import { SearchBar } from '@/components/catalog/SearchBar'
 import { FilterChips } from '@/components/catalog/FilterChips'
-import { PromptCard } from '@/components/catalog/PromptCard'
-import { useCatalogSearch } from '@/hooks/useCatalogSearch'
+import { ComponentCard } from '@/components/catalog/ComponentCard'
+import { Pagination } from '@/components/catalog/Pagination'
+import { SidePager, usePageKeys } from '@/components/catalog/SidePager'
 import { useIsDesktop, useIsMobile } from '@/hooks/useMediaQuery'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components/ui/tabs'
 import { PreviewFrame, PromptPanel } from '@/components/preview/PromptPanel'
-import { getComponentById } from '@/data/components/registry'
+import { components, getComponentById } from '@/data/components/registry'
+import { ThemedComponentPreview, hasThemedPreview } from '@/components/showcase/componentPreviews'
+import { useApp } from '@/contexts/AppContext'
 import { localized } from '@/lib/i18n'
 
+const PAGE_SIZE = 24
+
 export function ComponentsListPage() {
-  const { query, setQuery, selectedTags, setSelectedTags, results, allTags, loading } =
-    useCatalogSearch('component')
+  const { t } = useApp()
+  const [query, setQuery] = useState('')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [page, setPage] = useState(1)
+
+  const fuse = useMemo(
+    () =>
+      new Fuse(components, {
+        keys: ['title.zh-CN', 'title.en-US', 'description.zh-CN', 'description.en-US', 'tags', 'category'],
+        threshold: 0.35,
+      }),
+    [],
+  )
+
+  const filtered = useMemo(() => {
+    let list = components
+    if (query.trim()) list = fuse.search(query.trim()).map((r) => r.item)
+    if (selectedTags.length) list = list.filter((c) => selectedTags.some((tag) => c.tags.includes(tag)))
+    return list
+  }, [fuse, query, selectedTags])
+
+  const allTags = useMemo(() => {
+    const set = new Set<string>()
+    components.forEach((c) => c.tags.forEach((tag) => set.add(tag)))
+    return Array.from(set).sort()
+  }, [])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  usePageKeys(page, totalPages, setPage)
 
   return (
     <Layout>
       <Header>
-        <SearchBar value={query} onChange={setQuery} placeholder="搜索组件..." />
+        <SearchBar
+          value={query}
+          onChange={(v) => {
+            setQuery(v)
+            setPage(1)
+          }}
+          placeholder={t('components.searchPlaceholder')}
+        />
       </Header>
-      <main className="flex-1 p-4 md:p-6">
-        <h1 className="mb-4 text-xl font-bold">UI 组件</h1>
-        <FilterChips tags={allTags} selected={selectedTags} onChange={setSelectedTags} className="mb-4" />
-        {loading ? (
-          <p className="text-muted-foreground">加载中...</p>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {results.map((item) => (
-              <PromptCard key={item.id} item={item} />
-            ))}
-          </div>
-        )}
+      <SidePager page={page} totalPages={totalPages} onPageChange={setPage} />
+      <main className="flex-1 p-4 md:p-6 lg:px-20">
+        <div className="mb-4">
+          <h1 className="text-xl font-bold">{t('components.title')}</h1>
+          <p className="text-sm text-muted-foreground">{t('components.count', { n: filtered.length })}</p>
+        </div>
+        <FilterChips
+          tags={allTags}
+          selected={selectedTags}
+          onChange={(tags) => {
+            setSelectedTags(tags)
+            setPage(1)
+          }}
+          className="mb-4"
+        />
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {paginated.map((item) => (
+            <ComponentCard key={item.id} component={item} />
+          ))}
+        </div>
+        {filtered.length === 0 && <p className="text-muted-foreground">{t('common.empty')}</p>}
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </main>
     </Layout>
   )
@@ -42,6 +95,7 @@ export function ComponentDetailPage() {
   const component = getComponentById(id ?? '')
   const isMobile = useIsMobile()
   const isDesktop = useIsDesktop()
+  const { activeTokens } = useApp()
 
   if (!component) {
     return (
@@ -54,7 +108,14 @@ export function ComponentDetailPage() {
     )
   }
 
-  const preview = (
+  const preview = hasThemedPreview(component.id) ? (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="border-b border-border px-4 py-2 text-sm font-medium text-muted-foreground">组件预览</div>
+      <div className="p-4">
+        <ThemedComponentPreview id={component.id} tokens={activeTokens} />
+      </div>
+    </div>
+  ) : (
     <PreviewFrame html={component.previewSource} title="组件预览" />
   )
   const prompt = (

@@ -1,49 +1,56 @@
 import type { CSSProperties } from 'react'
+import { glassSurface } from '@/components/showcase/styleUtils'
 
 interface ShowcaseSlotProps {
   tokens: Record<string, string>
+  compact?: boolean
 }
 
-export function ShowcaseButton({ tokens }: ShowcaseSlotProps) {
+export function ShowcaseButton({ tokens, compact }: ShowcaseSlotProps) {
+  const glass = glassSurface(tokens)
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-1.5">
       <button
         type="button"
         style={{
           background: tokens['--sc-primary'],
           color: tokens['--sc-primary-fg'],
-          border: `2px solid ${tokens['--sc-border']}`,
+          border: `1px solid ${tokens['--sc-border']}`,
           borderRadius: tokens['--sc-radius'],
           boxShadow: tokens['--sc-shadow'],
-          padding: '8px 16px',
+          padding: compact ? '4px 8px' : '8px 16px',
           fontFamily: tokens['--sc-font'],
-          fontSize: '14px',
+          fontSize: compact ? '11px' : '14px',
           cursor: 'pointer',
+          ...glass,
         }}
       >
         Primary
       </button>
-      <button
-        type="button"
-        style={{
-          background: tokens['--sc-muted'],
-          color: tokens['--sc-muted-fg'],
-          border: `2px solid ${tokens['--sc-border']}`,
-          borderRadius: tokens['--sc-radius'],
-          boxShadow: tokens['--sc-shadow'],
-          padding: '8px 16px',
-          fontFamily: tokens['--sc-font'],
-          fontSize: '14px',
-          cursor: 'pointer',
-        }}
-      >
-        Secondary
-      </button>
+      {!compact && (
+        <button
+          type="button"
+          style={{
+            background: tokens['--sc-muted'],
+            color: tokens['--sc-muted-fg'],
+            border: `1px solid ${tokens['--sc-border']}`,
+            borderRadius: tokens['--sc-radius'],
+            boxShadow: tokens['--sc-shadow'],
+            padding: '8px 16px',
+            fontFamily: tokens['--sc-font'],
+            fontSize: '14px',
+            cursor: 'pointer',
+            ...glass,
+          }}
+        >
+          Secondary
+        </button>
+      )}
     </div>
   )
 }
 
-export function ShowcaseCard({ tokens }: ShowcaseSlotProps) {
+export function ShowcaseCard({ tokens, compact }: ShowcaseSlotProps) {
   return (
     <div
       style={{
@@ -52,15 +59,17 @@ export function ShowcaseCard({ tokens }: ShowcaseSlotProps) {
         border: `1px solid ${tokens['--sc-border']}`,
         borderRadius: tokens['--sc-radius'],
         boxShadow: tokens['--sc-shadow'],
-        padding: '16px',
+        padding: compact ? '8px' : '16px',
         fontFamily: tokens['--sc-font'],
-        backdropFilter: tokens['--sc-backdrop'],
+        ...glassSurface(tokens),
       }}
     >
-      <h4 style={{ margin: '0 0 4px', fontSize: '16px', fontWeight: 600 }}>Card Title</h4>
-      <p style={{ margin: 0, fontSize: '13px', color: tokens['--sc-muted-fg'] }}>
-        Unified showcase card — same structure, different style tokens.
-      </p>
+      <h4 style={{ margin: '0 0 2px', fontSize: compact ? '12px' : '16px', fontWeight: 600 }}>Card</h4>
+      {!compact && (
+        <p style={{ margin: 0, fontSize: '13px', color: tokens['--sc-muted-fg'] }}>
+          Unified showcase card — same structure, different style tokens.
+        </p>
+      )}
     </div>
   )
 }
@@ -77,7 +86,7 @@ export function ShowcaseNav({ tokens }: ShowcaseSlotProps) {
         border: `1px solid ${tokens['--sc-border']}`,
         borderRadius: tokens['--sc-radius'],
         fontFamily: tokens['--sc-font'],
-        backdropFilter: tokens['--sc-backdrop'],
+        ...glassSurface(tokens),
       }}
     >
       <span style={{ fontWeight: 700, color: tokens['--sc-fg'], fontSize: '15px' }}>Brand</span>
@@ -103,6 +112,7 @@ export function ShowcaseForm({ tokens }: ShowcaseSlotProps) {
     fontSize: '13px',
     fontFamily: tokens['--sc-font'],
     boxSizing: 'border-box',
+    ...glassSurface(tokens),
   }
   return (
     <div style={{ fontFamily: tokens['--sc-font'] }}>
@@ -119,12 +129,13 @@ export function ShowcaseForm({ tokens }: ShowcaseSlotProps) {
           padding: '8px',
           background: tokens['--sc-primary'],
           color: tokens['--sc-primary-fg'],
-          border: `2px solid ${tokens['--sc-border']}`,
+          border: `1px solid ${tokens['--sc-border']}`,
           borderRadius: tokens['--sc-radius'],
           boxShadow: tokens['--sc-shadow'],
           fontSize: '13px',
           fontWeight: 600,
           cursor: 'pointer',
+          ...glassSurface(tokens),
         }}
       >
         Submit
@@ -166,6 +177,7 @@ export function ShowcaseTable({ tokens }: ShowcaseSlotProps) {
                 padding: '2px 8px',
                 borderRadius: tokens['--sc-radius'],
                 fontSize: '11px',
+                ...glassSurface(tokens),
               }}
             >
               Active
