@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { getComponentCategoryName } from '@/data/components/registry'
 import type { ComponentItem } from '@/types/catalog'
 import { CopyButton } from '@/components/catalog/CopyButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,10 +15,16 @@ interface ComponentCardProps {
 export function ComponentCard({ component, className }: ComponentCardProps) {
   const { t, tr, activeTokens } = useApp()
   const themed = hasThemedPreview(component.id)
+  const categoryName = getComponentCategoryName(component.category)
 
   return (
     <Card className={cn('overflow-hidden transition-colors hover:border-primary/40', className)}>
       <div className="relative h-[150px] overflow-hidden border-b border-border bg-muted/40">
+        {categoryName && (
+          <span className="absolute left-2 top-2 z-10 rounded-full bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground backdrop-blur">
+            {tr(categoryName)}
+          </span>
+        )}
         <div
           className="pointer-events-none absolute left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-1/2 scale-[0.72]"
           style={{ width: '420px' }}
