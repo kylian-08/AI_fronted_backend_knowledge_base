@@ -30,6 +30,12 @@ export interface StyleItem extends CatalogItem {
   referenceImage?: string
   /** Marks user-imported styles (vs bundled catalog). */
   source?: 'bundled' | 'imported'
+  /**
+   * Explicit motion "personality" override (Phase 1 Motion Layer). When
+   * absent, resolved via `resolveMotionPresetKey()` from a curated lookup
+   * table or tag heuristic — see `src/lib/motion/presets.ts`.
+   */
+  motionPreset?: 'snappy' | 'editorial' | 'bouncy' | 'none'
 }
 
 export interface ComponentItem extends CatalogItem {

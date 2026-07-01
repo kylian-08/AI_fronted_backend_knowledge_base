@@ -1,17 +1,21 @@
 import type { CSSProperties } from 'react'
 import { glassSurface } from '@/components/showcase/styleUtils'
+import { MotionButton, MotionLift } from '@/components/motion/MotionPrimitives'
+import type { MotionPresetKey } from '@/lib/motion/presets'
 
 interface ShowcaseSlotProps {
   tokens: Record<string, string>
   compact?: boolean
+  /** Motion personality resolved from the parent style (Phase 1 Motion Layer). */
+  preset?: MotionPresetKey
 }
 
-export function ShowcaseButton({ tokens, compact }: ShowcaseSlotProps) {
+export function ShowcaseButton({ tokens, compact, preset }: ShowcaseSlotProps) {
   const glass = glassSurface(tokens)
   return (
     <div className="flex flex-wrap gap-1.5">
-      <button
-        type="button"
+      <MotionButton
+        preset={preset}
         style={{
           background: tokens['--sc-primary'],
           color: tokens['--sc-primary-fg'],
@@ -26,10 +30,10 @@ export function ShowcaseButton({ tokens, compact }: ShowcaseSlotProps) {
         }}
       >
         Primary
-      </button>
+      </MotionButton>
       {!compact && (
-        <button
-          type="button"
+        <MotionButton
+          preset={preset}
           style={{
             background: tokens['--sc-muted'],
             color: tokens['--sc-muted-fg'],
@@ -44,33 +48,36 @@ export function ShowcaseButton({ tokens, compact }: ShowcaseSlotProps) {
           }}
         >
           Secondary
-        </button>
+        </MotionButton>
       )}
     </div>
   )
 }
 
-export function ShowcaseCard({ tokens, compact }: ShowcaseSlotProps) {
+export function ShowcaseCard({ tokens, compact, preset }: ShowcaseSlotProps) {
   return (
-    <div
-      style={{
-        background: tokens['--sc-muted'],
-        color: tokens['--sc-fg'],
-        border: `1px solid ${tokens['--sc-border']}`,
-        borderRadius: tokens['--sc-radius'],
-        boxShadow: tokens['--sc-shadow'],
-        padding: compact ? '8px' : '16px',
-        fontFamily: tokens['--sc-font'],
-        ...glassSurface(tokens),
-      }}
-    >
-      <h4 style={{ margin: '0 0 2px', fontSize: compact ? '12px' : '16px', fontWeight: 600 }}>Card</h4>
-      {!compact && (
-        <p style={{ margin: 0, fontSize: '13px', color: tokens['--sc-muted-fg'] }}>
-          Unified showcase card — same structure, different style tokens.
-        </p>
-      )}
-    </div>
+    <MotionLift preset={preset}>
+      <div
+        style={{
+          background: tokens['--sc-muted'],
+          color: tokens['--sc-fg'],
+          border: `1px solid ${tokens['--sc-border']}`,
+          borderRadius: tokens['--sc-radius'],
+          boxShadow: tokens['--sc-shadow'],
+          padding: compact ? '8px' : '16px',
+          fontFamily: tokens['--sc-font'],
+          cursor: 'pointer',
+          ...glassSurface(tokens),
+        }}
+      >
+        <h4 style={{ margin: '0 0 2px', fontSize: compact ? '12px' : '16px', fontWeight: 600 }}>Card</h4>
+        {!compact && (
+          <p style={{ margin: 0, fontSize: '13px', color: tokens['--sc-muted-fg'] }}>
+            Unified showcase card — same structure, different style tokens.
+          </p>
+        )}
+      </div>
+    </MotionLift>
   )
 }
 

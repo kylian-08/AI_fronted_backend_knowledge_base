@@ -7,6 +7,8 @@ import {
   ShowcaseTable,
 } from '@/components/showcase/slots'
 import { isGlassStyle } from '@/components/showcase/styleUtils'
+import { MotionEnter } from '@/components/motion/MotionPrimitives'
+import { resolveMotionPresetKey } from '@/lib/motion/presets'
 import { cn } from '@/lib/utils'
 
 const ALL_SLOTS = [
@@ -32,6 +34,7 @@ export function ShowcaseShell({ style, className, compact, previewOnly }: Showca
   const isGradient = bg?.startsWith('linear') || bg?.startsWith('radial')
   const isGlass = isGlassStyle(style.tokens)
   const slots = previewOnly ? PREVIEW_SLOTS : ALL_SLOTS
+  const preset = resolveMotionPresetKey(style)
 
   return (
     <div
@@ -59,33 +62,34 @@ export function ShowcaseShell({ style, className, compact, previewOnly }: Showca
                 : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
           )}
         >
-          {slots.map(({ id, label, Component }) => (
-            <div
-              key={id}
-              className={cn(
-                isGlass
-                  ? previewOnly
-                    ? 'p-1'
-                    : 'p-2'
-                  : cn(
-                      'rounded-lg border border-white/10 bg-black/10 backdrop-blur-sm',
-                      previewOnly ? 'p-2' : 'p-3',
-                    ),
-              )}
-            >
-              {!previewOnly && (
-                <p
-                  className={cn(
-                    'mb-2 text-xs font-medium uppercase tracking-wide',
-                    !isGlass && 'text-white/60',
-                  )}
-                  style={isGlass ? { color: style.tokens['--sc-muted-fg'] } : undefined}
-                >
-                  {label}
-                </p>
-              )}
-              <Component tokens={style.tokens} compact={previewOnly || compact} />
-            </div>
+          {slots.map(({ id, label, Component }, index) => (
+            <MotionEnter key={id} preset={preset} delay={index * 0.05}>
+              <div
+                className={cn(
+                  isGlass
+                    ? previewOnly
+                      ? 'p-1'
+                      : 'p-2'
+                    : cn(
+                        'rounded-lg border border-white/10 bg-black/10 backdrop-blur-sm',
+                        previewOnly ? 'p-2' : 'p-3',
+                      ),
+                )}
+              >
+                {!previewOnly && (
+                  <p
+                    className={cn(
+                      'mb-2 text-xs font-medium uppercase tracking-wide',
+                      !isGlass && 'text-white/60',
+                    )}
+                    style={isGlass ? { color: style.tokens['--sc-muted-fg'] } : undefined}
+                  >
+                    {label}
+                  </p>
+                )}
+                <Component tokens={style.tokens} compact={previewOnly || compact} preset={preset} />
+              </div>
+            </MotionEnter>
           ))}
         </div>
       </div>

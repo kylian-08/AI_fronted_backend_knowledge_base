@@ -27,6 +27,7 @@ import {
   importComponentsFromJson,
   exportImportedComponents,
 } from '@/data/components/registry'
+import { resolveMotionPresetKey, type MotionPresetKey } from '@/lib/motion/presets'
 
 /** Default showcase tokens matching the app's built-in dark theme. */
 export const DEFAULT_SC_TOKENS: Record<string, string> = {
@@ -61,6 +62,8 @@ interface AppContextValue {
   refreshComponents: () => void
   /** Design tokens of the currently applied style (or the default theme). */
   activeTokens: Record<string, string>
+  /** Motion "personality" of the currently applied style (or 'none'). */
+  activeMotionPreset: MotionPresetKey
 }
 
 const AppContext = createContext<AppContextValue | null>(null)
@@ -134,14 +137,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return getAllComponentsList()
   }, [componentVersion])
 
-  const activeTokens = useMemo(() => {
+  const appliedStyle = useMemo(() => {
     void styleVersion
-    if (appliedStyleId) {
-      const s = getStyleById(appliedStyleId)
-      if (s) return s.tokens
-    }
-    return DEFAULT_SC_TOKENS
+    return appliedStyleId ? getStyleById(appliedStyleId) : undefined
   }, [appliedStyleId, styleVersion])
+
+  const activeTokens = useMemo(() => appliedStyle?.tokens ?? DEFAULT_SC_TOKENS, [appliedStyle])
+
+  const activeMotionPreset = useMemo(() => resolveMotionPresetKey(appliedStyle), [appliedStyle])
 
   const value = useMemo(
     () => ({
@@ -161,8 +164,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       refreshStyles,
       refreshComponents,
       activeTokens,
+      activeMotionPreset,
     }),
-    [locale, setLocale, t, tr, appliedStyleId, applyStyle, resetTheme, importStyles, importComponents, allStyles, allComponents, refreshStyles, refreshComponents, activeTokens],
+    [locale, setLocale, t, tr, appliedStyleId, applyStyle, resetTheme, importStyles, importComponents, allStyles, allComponents, refreshStyles, refreshComponents, activeTokens, activeMotionPreset],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

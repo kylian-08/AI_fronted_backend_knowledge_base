@@ -6,6 +6,8 @@ import { CopyButton } from '@/components/catalog/CopyButton'
 import { CopyImageButton } from '@/components/catalog/CopyImageButton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { MotionLift } from '@/components/motion/MotionPrimitives'
+import { resolveMotionPresetKey } from '@/lib/motion/presets'
 import { useApp } from '@/contexts/AppContext'
 import { cn } from '@/lib/utils'
 
@@ -17,9 +19,11 @@ interface StyleCardProps {
 export function StyleCard({ style, className }: StyleCardProps) {
   const { appliedStyleId, applyStyle, t, tr } = useApp()
   const isApplied = appliedStyleId === style.id
+  const preset = resolveMotionPresetKey(style)
 
   return (
-    <Card className={cn('overflow-hidden transition-colors hover:border-primary/40', className)}>
+    <MotionLift preset={preset} className="h-full">
+    <Card className={cn('h-full overflow-hidden transition-colors hover:border-primary/40', className)}>
       <div className="relative border-b border-border">
         {style.referenceImage ? (
           <img
@@ -88,5 +92,6 @@ export function StyleCard({ style, className }: StyleCardProps) {
         </div>
       </CardContent>
     </Card>
+    </MotionLift>
   )
 }

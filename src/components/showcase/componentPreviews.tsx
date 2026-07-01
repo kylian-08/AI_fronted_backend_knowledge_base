@@ -2,6 +2,8 @@ import type { CSSProperties } from 'react'
 import { ShowcaseForm, ShowcaseNav, ShowcaseTable } from '@/components/showcase/slots'
 import { pl, type PreviewLabelKey } from '@/lib/previewLabels'
 import type { Locale } from '@/types/catalog'
+import { MotionButton, MotionEnter } from '@/components/motion/MotionPrimitives'
+import { resolveMotionPresetKeyFromTokens } from '@/lib/motion/presets'
 
 type Tokens = Record<string, string>
 type L = (key: PreviewLabelKey) => string
@@ -122,7 +124,9 @@ function ToastPreview({ tokens, l }: PreviewProps) {
 
 function Framed({ tokens, children }: { tokens: Tokens; children: React.ReactNode }) {
   return (
-    <div style={{ padding: 16, background: surfaceBg(tokens), borderRadius: tokens['--sc-radius'] }}>{children}</div>
+    <MotionEnter preset={resolveMotionPresetKeyFromTokens(tokens)}>
+      <div style={{ padding: 16, background: surfaceBg(tokens), borderRadius: tokens['--sc-radius'] }}>{children}</div>
+    </MotionEnter>
   )
 }
 
@@ -146,14 +150,15 @@ function btn(tokens: Tokens, variant: 'primary' | 'secondary' | 'outline' | 'gho
 }
 
 function ButtonsPreview({ tokens }: PreviewProps) {
+  const preset = resolveMotionPresetKeyFromTokens(tokens)
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-        <button style={btn(tokens, 'primary')}>Primary</button>
-        <button style={btn(tokens, 'secondary')}>Secondary</button>
-        <button style={btn(tokens, 'outline')}>Outline</button>
-        <button style={btn(tokens, 'ghost')}>Ghost</button>
-        <button style={{ ...btn(tokens, 'primary'), opacity: 0.5, cursor: 'not-allowed' }}>Disabled</button>
+        <MotionButton preset={preset} style={btn(tokens, 'primary')}>Primary</MotionButton>
+        <MotionButton preset={preset} style={btn(tokens, 'secondary')}>Secondary</MotionButton>
+        <MotionButton preset={preset} style={btn(tokens, 'outline')}>Outline</MotionButton>
+        <MotionButton preset={preset} style={btn(tokens, 'ghost')}>Ghost</MotionButton>
+        <MotionButton preset={preset} disabled style={{ ...btn(tokens, 'primary'), opacity: 0.5, cursor: 'not-allowed' }}>Disabled</MotionButton>
       </div>
     </Framed>
   )

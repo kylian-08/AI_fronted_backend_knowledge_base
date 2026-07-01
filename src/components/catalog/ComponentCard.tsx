@@ -4,6 +4,7 @@ import type { ComponentItem } from '@/types/catalog'
 import { CopyButton } from '@/components/catalog/CopyButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemedComponentPreview, hasThemedPreview } from '@/components/showcase/componentPreviews'
+import { MotionLift } from '@/components/motion/MotionPrimitives'
 import { useApp } from '@/contexts/AppContext'
 import { cn } from '@/lib/utils'
 
@@ -13,12 +14,13 @@ interface ComponentCardProps {
 }
 
 export function ComponentCard({ component, className }: ComponentCardProps) {
-  const { t, tr, activeTokens, locale } = useApp()
+  const { t, tr, activeTokens, locale, activeMotionPreset } = useApp()
   const themed = hasThemedPreview(component.id)
   const categoryName = getComponentCategoryName(component.category)
 
   return (
-    <Card className={cn('overflow-hidden transition-colors hover:border-primary/40', className)}>
+    <MotionLift preset={activeMotionPreset} className="h-full">
+    <Card className={cn('h-full overflow-hidden transition-colors hover:border-primary/40', className)}>
       <div className="relative h-[150px] overflow-hidden border-b border-border bg-muted/40">
         {categoryName && (
           <span className="absolute left-2 top-2 z-10 rounded-full bg-background/80 px-2 py-0.5 text-[10px] font-medium text-muted-foreground backdrop-blur">
@@ -62,5 +64,6 @@ export function ComponentCard({ component, className }: ComponentCardProps) {
         </Link>
       </CardContent>
     </Card>
+    </MotionLift>
   )
 }

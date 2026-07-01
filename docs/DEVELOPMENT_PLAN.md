@@ -1,6 +1,7 @@
 # Prompt Assistant 开发文档 / Roadmap
 
-> 最后更新：2026-07-01　当前已发布版本：**`v0.3.0`**（已 commit / push / tag / GitHub Release，含可下载 exe）
+> 最后更新：2026-07-02　当前已发布版本：**`v0.3.0`**（已 commit / push / tag / GitHub Release，含可下载 exe）
+> 本地工作区未发布改动：Phase 1（动效系统）首批实现，见第 5 节
 >
 > 本文档面向：项目维护者本人、未来加入的协作者、以及需要快速理解现状再继续开发的 AI Agent。
 > **约定**：每完成一个 Phase 的收尾工作，回来更新本文档的「当前状态」「版本历史」两节，并把对应 Phase 的 checklist 打勾。
@@ -107,18 +108,34 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 
 来源：设计同事提出的四点建议（交互动效预览 / 前端代码直出 / 动效参数调试 / 多风格组合对比）+ 本人提出的 AI Native 方向，已确认落地路径。
 
-### Phase 1：动效系统（Motion Layer）
+### Phase 1：动效系统（Motion Layer） —— ✅ 首批已完成（2026-07-02）
 
 **目标**：从「静态看样」升级到「可体验交互」。
 
-- [ ] 引入 `motion`（Framer Motion）依赖
-- [ ] 设计 `MotionPreset` 数据结构，挂到 `StyleItem` 上（如 `motionPreset: 'snappy' | 'editorial' | 'bouncy' | 'none'`）
-  - 预设参数：`duration`、`delay`、`damping`、`stiffness`、`mass`、`ease`
-- [ ] 组件预览增加 3 类交互状态动效：`enter`（进场）、`hover`、`press`
-- [ ] `ShowcaseShell` / `ComponentCard` 预览接入 motion，随风格切换联动
-- [ ] 32 个精选风格逐一分配合适的 motion preset（如 Apple 毛玻璃 → 柔和 spring；赛博朋克 → 快速 snappy）
+- [x] 引入 `motion`（Framer Motion 的新包名）依赖
+- [x] 设计 `MotionPreset` 数据结构：`src/lib/motion/presets.ts`
+  - `MotionPresetKey = 'snappy' | 'editorial' | 'bouncy' | 'none'`，每个预设含 `spring`(stiffness/damping/mass，用于 hover/press) 与 `enter`(duration/ease，用于进场) 两组参数 + `hoverScale`/`pressScale`/`hoverLift`
+  - `StyleItem.motionPreset?` 支持显式覆盖；32 个精选风格通过 `CURATED_STYLE_MOTION` 逐一手动分配（如 Apple 毛玻璃 → `bouncy`，赛博朋克/科幻 HUD/Y2K → `snappy`，瑞士国际主义/包豪斯/企业简洁 → `editorial`，Windows 98/水墨/报纸印刷 → `none`）；60 个程序化变体走 tag 启发式兜底
+  - `resolveMotionPresetKey(style)` / `resolveMotionPresetKeyFromTokens(tokens)` 两个入口：前者用于拿到完整 `StyleItem` 的场景，后者用于只有 tokens 的组件预览渲染函数
+- [x] 新增可复用动效组件 `src/components/motion/MotionPrimitives.tsx`：`MotionEnter`（进场淡入+位移，支持 stagger delay）、`MotionLift`（卡片 hover 抬升+缩放）、`MotionButton`（按钮 hover/tap 反馈）
+- [x] 接入范围：
+  - `ShowcaseShell`（风格详情页/卡片预览）：每个 slot 按 index 错位进场，Button/Card 有真实 hover/press 反馈，随风格的 `motionPreset` 联动
+  - `StyleCard` / `ComponentCard`（风格库、组件库列表卡片）：hover 抬升 + 轻微缩放，`ComponentCard` 跟随当前**已应用**风格的 preset（`AppContext.activeMotionPreset`）
+  - `componentPreviews.tsx` 共享的 `Framed` 包装器（覆盖约 35/45 个组件预览）：进场动效随 tokens 启发式（玻璃拟态 → bouncy，其余 → none）
+  - `ButtonsPreview`（组件库「按钮」预览）：五个按钮全部换成 `MotionButton`，作为交互反馈的旗舰示例
+- [x] `AppContext` 新增 `activeMotionPreset`，随 `appliedStyleId` 联动，供未持有完整 `StyleItem` 的消费者使用
+- [x] 验收：`tsc -b` / `eslint`（19 个历史遗留问题，0 个新增）/ `npm run build` 均通过
 
-**验收标准**：任选一个风格切换后，组件预览的 hover/进场节奏应有可感知差异，而不是所有风格动效完全一致。
+**已知取舍**：主 JS bundle 因引入 `motion` 增大约 39KB (gzip)（`HomePage` 未做代码分割，直接引用了已接入 motion 的 `StyleCard`）。可接受，作为后续 Phase 6 工程化里的性能优化候选项（例如把 `motion` 拆到独立 vendor chunk，或延后加载）。
+
+**尚未覆盖 / 后续可继续**：
+
+- [ ] 剩余 ~10 个未使用 `Framed` 的组件预览（内部各自定义容器）尚未接入进场动效
+- [ ] `Toggle Switch`、`Dropdown Menu`、`Tabs` 等更适合展示状态切换动效的组件，目前只有基础进场，没有针对性的状态过渡动效
+- [ ] Agent Studio 生成结果页尚未接入 motion（生成的区块目前是静态排列）
+- [ ] 60 个程序化变体的 tag 启发式覆盖面有限，多数会落到默认 `none`，可考虑扩大规则表
+
+**验收标准**（原定）：任选一个风格切换后，组件预览的 hover/进场节奏应有可感知差异，而不是所有风格动效完全一致。—— ✅ 已满足（可在风格详情页对比如「Apple 毛玻璃」vs「瑞士国际主义」vs「Windows 98」的 hover 手感）。
 
 ### Phase 2：前端代码直出
 
@@ -182,7 +199,7 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 └── Phase 0：✅ 已完成，v0.3.0 已发布
 
 高价值 / 中等成本（建议紧接着做）
-└── Phase 1：动效系统  ← 设计师最能直接感知的改进
+└── Phase 1：动效系统  ← 🔶 首批已实现（未发布），剩余覆盖面见第 5 节
 └── Phase 3：参数调试面板  ← 和 Phase 1 强耦合，建议合并规划、分批交付
 
 中价值 / 视资源投入
@@ -194,7 +211,7 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 └── Phase 6：工程化协作基础（若确定要拉人一起开发，优先级应提前）
 ```
 
-**下一步建议**：Phase 1（动效系统）——当前产品与「专业设计工具」差距最大、也最容易被感知到改进；若近期计划邀请协作者，可将 Phase 6 的分支保护与 CI 提前插入。
+**下一步建议**：收尾并发布 Phase 1 的动效系统（版本号建议 `v0.4.0`），随后可直接衔接 Phase 3（参数调试面板）——两者强耦合，UI 层可以复用同一套 `MotionPreset` 结构；若近期计划邀请协作者，可将 Phase 6 的分支保护与 CI 提前插入。
 
 ---
 
