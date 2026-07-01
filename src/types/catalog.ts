@@ -37,6 +37,8 @@ export interface ComponentItem extends CatalogItem {
   previewType: 'react' | 'html' | 'jsx'
   previewSource: string
   states?: string[]
+  /** Marks user-imported components (vs bundled catalog). */
+  source?: 'bundled' | 'imported'
 }
 
 export type BackendFramework =

@@ -1,76 +1,101 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Layout, Header } from '@/components/layout/Layout'
-import { styles, getStyleById } from '@/data/styles/registry'
-import { components, getComponentById } from '@/data/components/registry'
+import { ComposerPicker } from '@/components/catalog/ComposerPicker'
+import { CopyButton } from '@/components/catalog/CopyButton'
+import { Button } from '@/components/ui/button'
+import { getStyleById } from '@/data/styles/registry'
+import { getComponentById, getComponentCategories } from '@/data/components/registry'
 import { backendItems, getBackendById } from '@/data/backend/registry'
 import { composePrompt } from '@/lib/promptComposer'
-import { CopyButton } from '@/components/catalog/CopyButton'
-import { localized } from '@/lib/i18n'
-import { Button } from '@/components/ui/button'
+import { STYLE_BUCKET_META, styleMatchesBucket, type StyleBucket } from '@/lib/styleCatalog'
+import { useApp } from '@/contexts/AppContext'
+import type { ComponentItem, StyleItem } from '@/types/catalog'
 
 export function ComposerPage() {
-  const [styleId, setStyleId] = useState(styles[0]?.id ?? '')
+  const { allStyles, allComponents, t, tr } = useApp()
+  const [selectedStyleId, setSelectedStyleId] = useState('')
   const [componentIds, setComponentIds] = useState<string[]>([])
   const [backendId, setBackendId] = useState('')
 
+  const styleId = selectedStyleId || allStyles[0]?.id || ''
+
+  const styleCategories = useMemo(
+    () => [
+      { key: null, label: t('styles.categoryAll'), match: () => true },
+      ...(Object.keys(STYLE_BUCKET_META) as StyleBucket[]).map((key) => ({
+        key,
+        label: tr(STYLE_BUCKET_META[key]),
+        match: (s: StyleItem) => styleMatchesBucket(s, key),
+      })),
+    ],
+    [t, tr],
+  )
+
+  const componentCategories = useMemo(
+    () => [
+      { key: null, label: t('components.categoryAll'), match: () => true },
+      ...getComponentCategories().map((c) => ({
+        key: c.key,
+        label: tr(c.name),
+        match: (item: ComponentItem) => item.category === c.key,
+      })),
+    ],
+    [t, tr],
+  )
+
   const composed = composePrompt({
     style: getStyleById(styleId),
-    components: componentIds.map((id) => getComponentById(id)).filter(Boolean) as typeof components,
+    components: componentIds.map((id) => getComponentById(id)).filter(Boolean) as ComponentItem[],
     backend: backendId ? getBackendById(backendId) : undefined,
   })
-
-  function toggleComponent(id: string) {
-    setComponentIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    )
-  }
 
   return (
     <Layout>
       <Header />
       <main className="flex-1 p-4 md:p-8">
-        <h1 className="mb-6 text-xl font-bold">Prompt 组合器</h1>
+        <h1 className="mb-6 text-xl font-bold">{t('composer.title')}</h1>
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-6">
             <section>
-              <h2 className="mb-2 text-sm font-semibold">选择风格（1 个）</h2>
-              <div className="flex flex-wrap gap-2">
-                {styles.map((s) => (
-                  <Button
-                    key={s.id}
-                    variant={styleId === s.id ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setStyleId(s.id)}
-                  >
-                    {localized(s.title)}
-                  </Button>
-                ))}
-              </div>
+              <h2 className="mb-2 text-sm font-semibold">{t('composer.pickStyle')}</h2>
+              <ComposerPicker
+                items={allStyles}
+                selectedIds={styleId ? [styleId] : []}
+                onChange={(ids) => setSelectedStyleId(ids[0] ?? '')}
+                mode="single"
+                categories={styleCategories}
+                searchPlaceholder={t('composer.searchStyle')}
+                emptyLabel={t('common.empty')}
+                tr={tr}
+              />
             </section>
             <section>
-              <h2 className="mb-2 text-sm font-semibold">选择组件（多选）</h2>
-              <div className="flex flex-wrap gap-2">
-                {components.map((c) => (
-                  <Button
-                    key={c.id}
-                    variant={componentIds.includes(c.id) ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => toggleComponent(c.id)}
-                  >
-                    {localized(c.title)}
-                  </Button>
-                ))}
-              </div>
+              <h2 className="mb-2 text-sm font-semibold">{t('composer.pickComponents')}</h2>
+              <ComposerPicker
+                items={allComponents}
+                selectedIds={componentIds}
+                onChange={setComponentIds}
+                mode="multiple"
+                categories={componentCategories}
+                searchPlaceholder={t('composer.searchComponent')}
+                emptyLabel={t('common.empty')}
+                tr={tr}
+              />
+              {componentIds.length > 0 && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {t('composer.selected', { n: componentIds.length })}
+                </p>
+              )}
             </section>
             <section>
-              <h2 className="mb-2 text-sm font-semibold">选择后端（可选 1 个）</h2>
+              <h2 className="mb-2 text-sm font-semibold">{t('composer.pickBackend')}</h2>
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant={!backendId ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setBackendId('')}
                 >
-                  无
+                  {t('composer.none')}
                 </Button>
                 {backendItems.map((b) => (
                   <Button
@@ -79,7 +104,7 @@ export function ComposerPage() {
                     size="sm"
                     onClick={() => setBackendId(b.id)}
                   >
-                    {localized(b.title)}
+                    {tr(b.title)}
                   </Button>
                 ))}
               </div>
@@ -87,8 +112,8 @@ export function ComposerPage() {
           </div>
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-sm font-semibold">组合结果</h2>
-              <CopyButton text={composed} />
+              <h2 className="text-sm font-semibold">{t('composer.result')}</h2>
+              <CopyButton text={composed} label={t('styles.copy')} copiedLabel={t('styles.copied')} />
             </div>
             <pre className="max-h-[70vh] overflow-auto rounded-xl border border-border bg-card p-4 text-xs whitespace-pre-wrap">
               {composed}

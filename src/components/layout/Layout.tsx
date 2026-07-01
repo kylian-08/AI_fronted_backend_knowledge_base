@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import {
+  Bot,
   Boxes,
   Combine,
   Home,
@@ -24,6 +25,7 @@ export function Sidebar() {
     { to: '/components', label: t('nav.components'), icon: Boxes },
     { to: '/backend', label: t('nav.backend'), icon: Layers },
     { to: '/composer', label: t('nav.composer'), icon: Combine },
+    { to: '/agent', label: t('nav.agent'), icon: Bot },
     { to: '/architecture', label: t('nav.architecture'), icon: Network },
   ]
 

@@ -13,7 +13,7 @@ interface ComponentCardProps {
 }
 
 export function ComponentCard({ component, className }: ComponentCardProps) {
-  const { t, tr, activeTokens } = useApp()
+  const { t, tr, activeTokens, locale } = useApp()
   const themed = hasThemedPreview(component.id)
   const categoryName = getComponentCategoryName(component.category)
 
@@ -30,7 +30,7 @@ export function ComponentCard({ component, className }: ComponentCardProps) {
           style={{ width: '420px' }}
         >
           {themed ? (
-            <ThemedComponentPreview id={component.id} tokens={activeTokens} compact />
+            <ThemedComponentPreview id={component.id} tokens={activeTokens} compact locale={locale} />
           ) : (
             <div dangerouslySetInnerHTML={{ __html: component.previewSource }} />
           )}

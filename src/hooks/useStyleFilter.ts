@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import Fuse from 'fuse.js'
 import type { StyleItem } from '@/types/catalog'
+import { styleMatchesBucket, type StyleBucket } from '@/lib/styleCatalog'
 
 const PAGE_SIZE = 24
 
 export function useStyleFilter(allStyles: StyleItem[]) {
   const [query, setQuery] = useState('')
+  const [selectedBucket, setSelectedBucket] = useState<StyleBucket | null>(null)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [page, setPage] = useState(1)
 
@@ -33,14 +35,20 @@ export function useStyleFilter(allStyles: StyleItem[]) {
     if (selectedTags.length > 0) {
       list = list.filter((s) => selectedTags.some((t) => s.tags.includes(t)))
     }
+    if (selectedBucket) {
+      list = list.filter((s) => styleMatchesBucket(s, selectedBucket))
+    }
     return list
-  }, [allStyles, fuse, query, selectedTags])
+  }, [allStyles, fuse, query, selectedTags, selectedBucket])
 
   const allTags = useMemo(() => {
+    const pool = selectedBucket
+      ? allStyles.filter((s) => styleMatchesBucket(s, selectedBucket))
+      : allStyles
     const set = new Set<string>()
-    allStyles.forEach((s) => s.tags.forEach((t) => set.add(t)))
+    pool.forEach((s) => s.tags.forEach((t) => set.add(t)))
     return Array.from(set).sort().slice(0, 30)
-  }, [allStyles])
+  }, [allStyles, selectedBucket])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
   const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
@@ -55,9 +63,17 @@ export function useStyleFilter(allStyles: StyleItem[]) {
     setPage(1)
   }
 
+  function setBucketAndReset(bucket: StyleBucket | null) {
+    setSelectedBucket(bucket)
+    setSelectedTags([])
+    setPage(1)
+  }
+
   return {
     query,
     setQuery: setQueryAndReset,
+    selectedBucket,
+    setSelectedBucket: setBucketAndReset,
     selectedTags,
     setSelectedTags: setTagsAndReset,
     filtered,

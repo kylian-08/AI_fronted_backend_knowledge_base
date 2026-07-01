@@ -1,20 +1,19 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Palette, Boxes, Layers, Network, Sparkles } from 'lucide-react'
+import { Palette, Boxes, Bot, Layers, Network, Sparkles } from 'lucide-react'
 import { Layout, Header } from '@/components/layout/Layout'
 import { SearchBar } from '@/components/catalog/SearchBar'
 import { StyleCard } from '@/components/catalog/StyleCard'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { searchCatalog } from '@/lib/search'
 import { useApp } from '@/contexts/AppContext'
-import { components } from '@/data/components/registry'
 import { backendItems } from '@/data/backend/registry'
 import { cn } from '@/lib/utils'
 
 export function HomePage() {
   const [query, setQuery] = useState('')
   const navigate = useNavigate()
-  const { allStyles, t } = useApp()
+  const { allStyles, allComponents, t } = useApp()
 
   const featured = allStyles.slice(0, 6)
 
@@ -33,7 +32,15 @@ export function HomePage() {
       title: t('nav.components'),
       desc: t('home.modules.components.desc'),
       color: 'text-blue-400',
-      stat: components.length,
+      stat: allComponents.length,
+    },
+    {
+      to: '/agent',
+      icon: Bot,
+      title: t('nav.agent'),
+      desc: t('home.modules.agent.desc'),
+      color: 'text-fuchsia-400',
+      stat: null,
     },
     {
       to: '/backend',
@@ -91,7 +98,7 @@ export function HomePage() {
           <div className="mt-6 grid grid-cols-3 gap-3 md:absolute md:right-8 md:top-1/2 md:mt-0 md:w-72 md:-translate-y-1/2">
             {[
               { label: t('home.stats.styles'), value: allStyles.length },
-              { label: t('home.stats.components'), value: components.length },
+              { label: t('home.stats.components'), value: allComponents.length },
               { label: t('home.stats.backend'), value: backendItems.length },
             ].map(({ label, value }) => (
               <div key={label} className="rounded-xl border border-border/60 bg-background/60 p-3 text-center backdrop-blur">

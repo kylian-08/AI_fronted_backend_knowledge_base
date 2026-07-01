@@ -1,7 +1,7 @@
 import type { BackendItem } from '@/types/catalog'
 
 export const backendRegistry = {
-  version: '1.0.0',
+  version: '1.1.0',
   categories: {
     node: {
       name: { 'zh-CN': 'Node.js', 'en-US': 'Node.js' },
@@ -12,6 +12,16 @@ export const backendRegistry = {
       name: { 'zh-CN': 'Python', 'en-US': 'Python' },
       key: 'python',
       items: ['fastapi-crud', 'fastapi-auth', 'django-drf'],
+    },
+    go: {
+      name: { 'zh-CN': 'Go', 'en-US': 'Go' },
+      key: 'go',
+      items: ['gin-crud', 'gin-auth'],
+    },
+    java: {
+      name: { 'zh-CN': 'Java', 'en-US': 'Java' },
+      key: 'java',
+      items: ['spring-crud', 'spring-security'],
     },
   },
 } as const
@@ -258,6 +268,144 @@ ViewSet: ArticleViewSet(ModelViewSet)
 Permissions: IsAuthenticatedOrReadOnly
 Pagination: PageNumberPagination, page_size=20
 Filter: django-filter (title icontains, published)`,
+    },
+  },
+  {
+    id: 'gin-crud',
+    slug: 'gin-crud',
+    kind: 'backend',
+    category: 'go',
+    framework: 'gin',
+    patterns: ['crud', 'rest'],
+    status: 'ready',
+    title: { 'zh-CN': 'Gin REST CRUD', 'en-US': 'Gin REST CRUD' },
+    description: {
+      'zh-CN': 'Gin + GORM 完整 CRUD API 模块。',
+      'en-US': 'Gin + GORM full CRUD API module.',
+    },
+    tags: ['gin', 'gorm', 'crud', 'go'],
+    stack: ['Gin', 'GORM', 'PostgreSQL', 'Go 1.22'],
+    prompt: {
+      'zh-CN': `生成 Gin REST CRUD 模块：
+
+Framework: Gin 1.9 + Go 1.22
+ORM: GORM + PostgreSQL
+模型: User(ID uint, Email string unique, Name string, CreatedAt time)
+路由: GET/POST /api/users, GET/PUT/DELETE /api/users/:id
+中间件: RequestID, Logger, Recovery, CORS
+响应: 统一 JSON { data, error, meta }
+验证: binding tag + 自定义 validator
+测试: httptest 覆盖 CRUD  happy path`,
+      'en-US': `Generate Gin REST CRUD module:
+
+Framework: Gin 1.9 + Go 1.22, GORM + PostgreSQL
+Model: User(ID, Email unique, Name, CreatedAt)
+Routes: full CRUD under /api/users
+Middleware: RequestID, Logger, Recovery, CORS
+Response envelope: { data, error, meta }
+Validation: binding tags + custom validators
+Tests: httptest for CRUD happy path`,
+    },
+  },
+  {
+    id: 'gin-auth',
+    slug: 'gin-auth',
+    kind: 'backend',
+    category: 'go',
+    framework: 'gin',
+    patterns: ['auth', 'jwt'],
+    status: 'ready',
+    title: { 'zh-CN': 'Gin JWT 认证', 'en-US': 'Gin JWT Auth' },
+    description: {
+      'zh-CN': 'Gin JWT 登录/注册/刷新 Token 与鉴权中间件。',
+      'en-US': 'Gin JWT login/register/refresh and auth middleware.',
+    },
+    tags: ['gin', 'jwt', 'auth', 'go'],
+    stack: ['Gin', 'jwt-go', 'bcrypt', 'Go 1.22'],
+    prompt: {
+      'zh-CN': `生成 Gin JWT 认证模块：
+
+端点: POST /auth/register, /auth/login, POST /auth/refresh, GET /auth/me
+Token: access 15min + refresh 7d, HttpOnly cookie 或 Bearer header
+中间件: AuthRequired 解析 JWT，注入 userID 到 context
+密码: bcrypt cost 12
+安全: 限流登录, 统一错误码, 不泄露用户是否存在`,
+      'en-US': `Generate Gin JWT auth module:
+
+Endpoints: register, login, refresh, me
+Tokens: access 15min + refresh 7d, cookie or Bearer
+Middleware: AuthRequired with userID in context
+Password: bcrypt cost 12
+Security: login rate limit, opaque errors`,
+    },
+  },
+  {
+    id: 'spring-crud',
+    slug: 'spring-crud',
+    kind: 'backend',
+    category: 'java',
+    framework: 'spring',
+    patterns: ['crud', 'rest'],
+    status: 'ready',
+    title: { 'zh-CN': 'Spring Boot REST CRUD', 'en-US': 'Spring Boot REST CRUD' },
+    description: {
+      'zh-CN': 'Spring Boot 3 + JPA 标准 CRUD REST API。',
+      'en-US': 'Spring Boot 3 + JPA standard CRUD REST API.',
+    },
+    tags: ['spring', 'jpa', 'crud', 'java'],
+    stack: ['Spring Boot 3', 'Spring Data JPA', 'PostgreSQL', 'Java 21'],
+    prompt: {
+      'zh-CN': `生成 Spring Boot REST CRUD：
+
+Framework: Spring Boot 3.2 + Java 21
+Entity: Product(id, name, price, stock, createdAt) JPA
+Repository: ProductRepository extends JpaRepository
+Service: ProductService 事务边界 + 业务校验
+Controller: ProductController @RestController /api/products
+DTO: 请求/响应分离, @Valid + MethodArgumentNotValidException 处理
+分页: Pageable, Sort
+OpenAPI: springdoc 注解`,
+      'en-US': `Generate Spring Boot REST CRUD:
+
+Spring Boot 3.2 + Java 21, JPA Product entity
+Repository + Service + @RestController
+DTOs with @Valid, global exception handler
+Pagination: Pageable, Sort
+OpenAPI via springdoc`,
+    },
+  },
+  {
+    id: 'spring-security',
+    slug: 'spring-security',
+    kind: 'backend',
+    category: 'java',
+    framework: 'spring',
+    patterns: ['auth', 'security'],
+    status: 'ready',
+    title: { 'zh-CN': 'Spring Security JWT', 'en-US': 'Spring Security JWT' },
+    description: {
+      'zh-CN': 'Spring Security 6 + JWT 无状态认证配置。',
+      'en-US': 'Spring Security 6 stateless JWT authentication.',
+    },
+    tags: ['spring', 'security', 'jwt', 'java'],
+    stack: ['Spring Boot 3', 'Spring Security 6', 'jjwt', 'Java 21'],
+    prompt: {
+      'zh-CN': `生成 Spring Security JWT 配置：
+
+SecurityFilterChain: 无状态, CSRF 关闭, /api/auth/** permitAll
+JwtService: 签发/验证 HS256, claims sub+roles
+Filter: JwtAuthFilter 在 UsernamePasswordAuthenticationFilter 之前
+UserDetailsService + BCryptPasswordEncoder
+端点: register/login 返回 accessToken + refreshToken
+异常: 401/403 统一 JSON 错误体`,
+      'en-US': `Generate Spring Security JWT setup:
+
+SecurityFilterChain: stateless, CSRF off, auth endpoints public
+JwtService: sign/verify HS256 with roles claim
+JwtAuthFilter before UsernamePasswordAuthenticationFilter
+UserDetailsService + BCrypt
+Register/login return access + refresh tokens
+401/403 JSON error responses`,
     },
   },
 ]

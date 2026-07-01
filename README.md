@@ -9,10 +9,13 @@
 - **应用到本应用**：一键把任意风格应用到整个 App，界面实时变色
 - **风格导入 / 导出**：支持 JSON 格式（含 prompt 与参考图 referenceImage），导入后可直接应用
 - **参考图**：每个风格可一键复制 / 下载参考图（PNG）供 AI 参考
-- **UI 组件**：45 个组件模板，覆盖操作、反馈、数据展示、导航、表单五大分类；列表卡片预览跟随当前应用风格动态变化
-- **后端框架**：NestJS、FastAPI、Express、Django 结构化 Prompt（7 个模板）
+- **UI 组件**：45 个组件模板，覆盖操作、反馈、数据展示、导航、表单五大分类；列表卡片预览跟随当前应用风格动态变化，预览文案支持中英文
+- **组件导入 / 导出**：支持 JSON 格式导入自定义组件 Prompt，与风格库能力对齐
+- **后端框架**：NestJS、FastAPI、Express、Django、Gin、Spring 结构化 Prompt（11 个模板）
 - **架构绘图**：占位模块，预留蓝图编辑器
-- **Prompt 组合器**：风格 + 组件 + 后端一键组合
+- **Prompt 组合器**：风格（含已导入）+ 组件 + 后端一键组合，支持搜索与分类筛选
+- **风格分类**：精选 / 核心 / 变体 / 已导入四大分类 Tab，快速定位目标风格
+- **AI Agent Studio（Beta）**：描述产品与品牌，Agent 从风格库与组件库中自动编排出可交互的界面方案；内置离线启发式引擎，预留真实模型接入接口
 - **中英文切换** & **键盘左右键 / 侧边悬浮按钮翻页**
 
 ### UI 组件分类（45 个）
@@ -26,6 +29,25 @@
 | 表单 Forms | 登录表单、搜索框、文本输入、下拉选择、复选框组、单选组、多行文本、日期选择、文件上传、滑块、标签输入 |
 
 ## Release Notes
+
+### v0.3.0 (2026-07-01)
+
+**新增**
+- 🤖 **AI Agent Studio（Beta）**：新增 `/agent` 页面，用户描述产品/品牌/风格关键词/页面区块后，Agent 自动匹配风格并编排出可交互的界面方案（导航、Hero、功能、价格、评价、表单、FAQ、页脚等区块），生成结果可一键「应用」风格或复制 Prompt。内置离线启发式引擎（无需 API Key），并预留 `remote-llm` 远程模型接口（`src/lib/agent/`），后续可无缝切换为真实 LLM 驱动。
+- 🎛️ **Prompt 组合器重构**：风格/组件选择器改为搜索 + 分类 Tab（`ComposerPicker`），替代原先的按钮平铺；风格选择接入含用户导入项的完整风格库。
+- 🏷️ **风格分类 Tab**：风格库列表新增「精选 / 核心 / 变体 / 已导入」筛选，更快定位目标风格。
+- 📥 **组件导入 / 导出**：对齐风格库能力，支持 JSON 格式导入自定义组件 Prompt。
+- 🧱 **后端模板扩展至 11 个**：新增 Gin（Go）REST CRUD / JWT 认证、Spring Boot（Java）REST CRUD / Security JWT。
+- 🌐 **组件预览 i18n**：45 个组件预览的示例文案（按钮、状态、占位符等）随 App 语言切换，不再写死中文。
+
+**文档**
+- 新增 `docs/DEVELOPMENT_PLAN.md`：架构现状梳理与后续 Roadmap（动效系统、代码直出、参数调试、多方案对比、AI Native 深化、工程化）。
+- README 与实际数据同步（97 风格 / 45 组件 / 11 后端模板）。
+
+**工程**
+- 修复 ESLint 未忽略 `src-tauri/target` 构建产物导致的海量误报。
+
+**下载**：见本页 Assets 中的 `Prompt-Assistant-v0.3.0.exe`（Windows 便携版，免安装）。
 
 ### v0.2.1 (2026-06-29)
 
@@ -100,10 +122,12 @@ npm run build:desktop
 src/
   data/          # 风格、组件、后端 JSON/TS 数据
   components/    # UI、Showcase、Layout
-  pages/         # 路由页面
-  lib/           # 搜索、i18n、平台、组合器
+  pages/         # 路由页面（含 agent/ AI Studio）
+  lib/           # 搜索、i18n、平台、组合器、agent（AI Provider 抽象）
+  types/         # 数据类型（catalog、agent）
 scripts/         # 构建索引、校验
 src-tauri/       # Tauri 桌面壳
+docs/            # 开发文档与 Roadmap
 ```
 
 ## 校验

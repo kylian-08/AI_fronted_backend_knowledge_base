@@ -1,11 +1,15 @@
 import type { CSSProperties } from 'react'
 import { ShowcaseForm, ShowcaseNav, ShowcaseTable } from '@/components/showcase/slots'
+import { pl, type PreviewLabelKey } from '@/lib/previewLabels'
+import type { Locale } from '@/types/catalog'
 
 type Tokens = Record<string, string>
+type L = (key: PreviewLabelKey) => string
 
 interface PreviewProps {
   tokens: Tokens
   compact?: boolean
+  l: L
 }
 
 function surfaceBg(tokens: Tokens): string {
@@ -20,7 +24,7 @@ function glass(tokens: Tokens): CSSProperties {
     : {}
 }
 
-function ModalPreview({ tokens }: PreviewProps) {
+function ModalPreview({ tokens, l }: PreviewProps) {
   const fontFamily = tokens['--sc-font']
   return (
     <div
@@ -44,9 +48,9 @@ function ModalPreview({ tokens }: PreviewProps) {
           ...glass(tokens),
         }}
       >
-        <h3 style={{ margin: '0 0 8px', color: tokens['--sc-fg'], fontSize: 17, fontWeight: 600 }}>确认删除</h3>
+        <h3 style={{ margin: '0 0 8px', color: tokens['--sc-fg'], fontSize: 17, fontWeight: 600 }}>{l('confirmDelete')}</h3>
         <p style={{ margin: '0 0 16px', color: tokens['--sc-muted-fg'], fontSize: 13 }}>
-          此操作不可撤销，确定继续吗？
+          {l('irreversible')}
         </p>
         <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button
@@ -61,7 +65,7 @@ function ModalPreview({ tokens }: PreviewProps) {
               cursor: 'pointer',
             }}
           >
-            取消
+            {l('cancel')}
           </button>
           <button
             style={{
@@ -76,7 +80,7 @@ function ModalPreview({ tokens }: PreviewProps) {
               cursor: 'pointer',
             }}
           >
-            删除
+            {l('delete')}
           </button>
         </div>
       </div>
@@ -84,7 +88,7 @@ function ModalPreview({ tokens }: PreviewProps) {
   )
 }
 
-function ToastPreview({ tokens }: PreviewProps) {
+function ToastPreview({ tokens, l }: PreviewProps) {
   const fontFamily = tokens['--sc-font']
   const toast = (accent: string, title: string, body: string) => (
     <div
@@ -110,8 +114,8 @@ function ToastPreview({ tokens }: PreviewProps) {
   )
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: 16, background: surfaceBg(tokens), borderRadius: tokens['--sc-radius'], fontFamily }}>
-      {toast(tokens['--sc-primary'], '操作成功', '更改已保存。')}
-      {toast(tokens['--sc-muted-fg'], '提示', '有新的更新可用。')}
+      {toast(tokens['--sc-primary'], l('success'), l('saved'))}
+      {toast(tokens['--sc-muted-fg'], l('hint'), l('updateAvailable'))}
     </div>
   )
 }
@@ -173,22 +177,22 @@ function BadgesPreview({ tokens }: PreviewProps) {
   )
 }
 
-function ContentCardPreview({ tokens }: PreviewProps) {
+function ContentCardPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], boxShadow: tokens['--sc-shadow'], overflow: 'hidden', fontFamily: tokens['--sc-font'], ...glass(tokens) }}>
         <div style={{ height: 56, background: tokens['--sc-primary'], opacity: 0.85 }} />
         <div style={{ padding: 14 }}>
-          <h4 style={{ margin: '0 0 4px', color: tokens['--sc-fg'], fontSize: 15, fontWeight: 600 }}>卡片标题</h4>
-          <p style={{ margin: '0 0 12px', color: tokens['--sc-muted-fg'], fontSize: 12 }}>简短的内容描述文本。</p>
-          <button style={btn(tokens, 'primary')}>查看</button>
+          <h4 style={{ margin: '0 0 4px', color: tokens['--sc-fg'], fontSize: 15, fontWeight: 600 }}>{l('cardTitle')}</h4>
+          <p style={{ margin: '0 0 12px', color: tokens['--sc-muted-fg'], fontSize: 12 }}>{l('cardDesc')}</p>
+          <button style={btn(tokens, 'primary')}>{l('view')}</button>
         </div>
       </div>
     </Framed>
   )
 }
 
-function TabsPreview({ tokens }: PreviewProps) {
+function TabsPreview({ tokens, l }: PreviewProps) {
   const tab = (text: string, active: boolean) => (
     <span style={{ padding: '8px 14px', fontSize: 13, fontFamily: tokens['--sc-font'], color: active ? tokens['--sc-fg'] : tokens['--sc-muted-fg'], borderBottom: `2px solid ${active ? tokens['--sc-primary'] : 'transparent'}`, fontWeight: active ? 600 : 400 }}>{text}</span>
   )
@@ -196,60 +200,60 @@ function TabsPreview({ tokens }: PreviewProps) {
     <Framed tokens={tokens}>
       <div style={{ fontFamily: tokens['--sc-font'] }}>
         <div style={{ display: 'flex', gap: 4, borderBottom: `1px solid ${tokens['--sc-border']}` }}>
-          {tab('概览', true)}
-          {tab('详情', false)}
-          {tab('设置', false)}
+          {tab(l('tabOverview'), true)}
+          {tab(l('tabDetails'), false)}
+          {tab(l('tabSettings'), false)}
         </div>
-        <p style={{ margin: '12px 2px 0', color: tokens['--sc-muted-fg'], fontSize: 12 }}>「概览」标签页的内容区域。</p>
+        <p style={{ margin: '12px 2px 0', color: tokens['--sc-muted-fg'], fontSize: 12 }}>{l('tabContent')}</p>
       </div>
     </Framed>
   )
 }
 
-function AccordionPreview({ tokens }: PreviewProps) {
+function AccordionPreview({ tokens, l }: PreviewProps) {
   const row = (text: string, open: boolean) => (
     <div style={{ borderBottom: `1px solid ${tokens['--sc-border']}` }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 4px', color: tokens['--sc-fg'], fontSize: 13, fontWeight: 600 }}>
         <span>{text}</span>
         <span style={{ color: tokens['--sc-muted-fg'] }}>{open ? '−' : '+'}</span>
       </div>
-      {open && <p style={{ margin: '0 4px 10px', color: tokens['--sc-muted-fg'], fontSize: 12 }}>展开的内容详情区域。</p>}
+      {open && <p style={{ margin: '0 4px 10px', color: tokens['--sc-muted-fg'], fontSize: 12 }}>{l('accordionExpanded')}</p>}
     </div>
   )
   return (
     <Framed tokens={tokens}>
       <div style={{ fontFamily: tokens['--sc-font'] }}>
-        {row('什么是 Prompt？', true)}
-        {row('如何导入风格？', false)}
+        {row(l('faqPrompt'), true)}
+        {row(l('faqImport'), false)}
       </div>
     </Framed>
   )
 }
 
-function DropdownPreview({ tokens }: PreviewProps) {
+function DropdownPreview({ tokens, l }: PreviewProps) {
   const item = (text: string, active?: boolean) => (
     <div style={{ padding: '8px 12px', fontSize: 13, color: active ? tokens['--sc-primary-fg'] : tokens['--sc-fg'], background: active ? tokens['--sc-primary'] : 'transparent', borderRadius: tokens['--sc-radius'] }}>{text}</div>
   )
   return (
     <Framed tokens={tokens}>
       <div style={{ width: 180, background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], boxShadow: tokens['--sc-shadow'], padding: 4, fontFamily: tokens['--sc-font'], ...glass(tokens) }}>
-        {item('个人资料', true)}
-        {item('账户设置')}
-        {item('退出登录')}
+        {item(l('profile'), true)}
+        {item(l('accountSettings'))}
+        {item(l('signOut'))}
       </div>
     </Framed>
   )
 }
 
-function TooltipPreview({ tokens }: PreviewProps) {
+function TooltipPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, fontFamily: tokens['--sc-font'] }}>
         <div style={{ position: 'relative', background: tokens['--sc-fg'], color: tokens['--sc-bg']?.startsWith('#') ? tokens['--sc-bg'] : tokens['--sc-muted'], padding: '6px 10px', borderRadius: tokens['--sc-radius'], fontSize: 12, boxShadow: tokens['--sc-shadow'] }}>
-          提示文本
+          {l('tooltipText')}
           <span style={{ position: 'absolute', left: '50%', bottom: -5, width: 10, height: 10, background: tokens['--sc-fg'], transform: 'translateX(-50%) rotate(45deg)' }} />
         </div>
-        <button style={btn(tokens, 'secondary')}>悬停我</button>
+        <button style={btn(tokens, 'secondary')}>{l('hoverMe')}</button>
       </div>
     </Framed>
   )
@@ -287,7 +291,7 @@ function AvatarGroupPreview({ tokens }: PreviewProps) {
   )
 }
 
-function ProgressPreview({ tokens }: PreviewProps) {
+function ProgressPreview({ tokens, l }: PreviewProps) {
   const bar = (pct: number) => (
     <div style={{ height: 8, background: tokens['--sc-muted'], borderRadius: 999, overflow: 'hidden' }}>
       <div style={{ width: `${pct}%`, height: '100%', background: tokens['--sc-primary'], borderRadius: 999 }} />
@@ -298,7 +302,7 @@ function ProgressPreview({ tokens }: PreviewProps) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontFamily: tokens['--sc-font'] }}>
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, color: tokens['--sc-muted-fg'], fontSize: 12 }}>
-            <span>上传中</span><span>72%</span>
+            <span>{l('uploading')}</span><span>72%</span>
           </div>
           {bar(72)}
         </div>
@@ -308,30 +312,30 @@ function ProgressPreview({ tokens }: PreviewProps) {
   )
 }
 
-function AlertPreview({ tokens }: PreviewProps) {
+function AlertPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderLeft: `3px solid ${tokens['--sc-primary']}`, borderRadius: tokens['--sc-radius'], padding: '12px 14px', fontFamily: tokens['--sc-font'], ...glass(tokens) }}>
         <span style={{ color: tokens['--sc-primary'], fontWeight: 700 }}>ⓘ</span>
         <div>
-          <div style={{ color: tokens['--sc-fg'], fontSize: 13, fontWeight: 600 }}>提示</div>
-          <div style={{ color: tokens['--sc-muted-fg'], fontSize: 12 }}>这是一条信息提示横幅。</div>
+          <div style={{ color: tokens['--sc-fg'], fontSize: 13, fontWeight: 600 }}>{l('alertTitle')}</div>
+          <div style={{ color: tokens['--sc-muted-fg'], fontSize: 12 }}>{l('alertBody')}</div>
         </div>
       </div>
     </Framed>
   )
 }
 
-function BreadcrumbPreview({ tokens }: PreviewProps) {
+function BreadcrumbPreview({ tokens, l }: PreviewProps) {
   const sep = <span style={{ color: tokens['--sc-muted-fg'], margin: '0 8px' }}>/</span>
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', alignItems: 'center', fontSize: 13, fontFamily: tokens['--sc-font'] }}>
-        <span style={{ color: tokens['--sc-muted-fg'] }}>首页</span>
+        <span style={{ color: tokens['--sc-muted-fg'] }}>{l('home')}</span>
         {sep}
-        <span style={{ color: tokens['--sc-muted-fg'] }}>风格</span>
+        <span style={{ color: tokens['--sc-muted-fg'] }}>{l('styles')}</span>
         {sep}
-        <span style={{ color: tokens['--sc-fg'], fontWeight: 600 }}>玻璃拟态</span>
+        <span style={{ color: tokens['--sc-fg'], fontWeight: 600 }}>{l('glassmorphism')}</span>
       </div>
     </Framed>
   )
@@ -356,7 +360,7 @@ function PaginationPreview({ tokens }: PreviewProps) {
   )
 }
 
-function ToggleSwitchPreview({ tokens }: PreviewProps) {
+function ToggleSwitchPreview({ tokens, l }: PreviewProps) {
   const sw = (on: boolean) => (
     <span style={{ width: 44, height: 24, borderRadius: 999, background: on ? tokens['--sc-primary'] : tokens['--sc-border'], position: 'relative', display: 'inline-block', transition: 'background .2s' }}>
       <span style={{ position: 'absolute', top: 2, left: on ? 22 : 2, width: 20, height: 20, borderRadius: 999, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }} />
@@ -371,14 +375,14 @@ function ToggleSwitchPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {row('推送通知', true)}
-        {row('深色模式', false)}
+        {row(l('pushNotif'), true)}
+        {row(l('darkMode'), false)}
       </div>
     </Framed>
   )
 }
 
-function StepperPreview({ tokens }: PreviewProps) {
+function StepperPreview({ tokens, l }: PreviewProps) {
   const step = (n: number, label: string, state: 'done' | 'active' | 'todo') => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, flex: 1 }}>
       <span style={{ width: 28, height: 28, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, background: state === 'todo' ? 'transparent' : tokens['--sc-primary'], color: state === 'todo' ? tokens['--sc-muted-fg'] : tokens['--sc-primary-fg'], border: `1px solid ${state === 'todo' ? tokens['--sc-border'] : tokens['--sc-primary']}` }}>
@@ -391,17 +395,17 @@ function StepperPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-        {step(1, '账户', 'done')}
+        {step(1, l('stepAccount'), 'done')}
         {line}
-        {step(2, '资料', 'active')}
+        {step(2, l('stepProfile'), 'active')}
         {line}
-        {step(3, '完成', 'todo')}
+        {step(3, l('stepDone'), 'todo')}
       </div>
     </Framed>
   )
 }
 
-function StatCardPreview({ tokens }: PreviewProps) {
+function StatCardPreview({ tokens, l }: PreviewProps) {
   const card = (label: string, value: string, delta: string) => (
     <div style={{ flex: 1, background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], padding: 12, fontFamily: tokens['--sc-font'], ...glass(tokens) }}>
       <div style={{ color: tokens['--sc-muted-fg'], fontSize: 11 }}>{label}</div>
@@ -412,21 +416,21 @@ function StatCardPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', gap: 10 }}>
-        {card('总用户', '12.8k', '↑ 12%')}
-        {card('收入', '¥48k', '↑ 8%')}
+        {card(l('statUsers'), '12.8k', '↑ 12%')}
+        {card(l('statRevenue'), '¥48k', '↑ 8%')}
       </div>
     </Framed>
   )
 }
 
-function EmptyStatePreview({ tokens }: PreviewProps) {
+function EmptyStatePreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 8, padding: '8px 0', fontFamily: tokens['--sc-font'] }}>
         <span style={{ width: 48, height: 48, borderRadius: 12, background: tokens['--sc-muted'], border: `1px dashed ${tokens['--sc-border']}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: tokens['--sc-muted-fg'] }}>📭</span>
-        <div style={{ color: tokens['--sc-fg'], fontSize: 14, fontWeight: 600 }}>暂无数据</div>
-        <div style={{ color: tokens['--sc-muted-fg'], fontSize: 12 }}>点击下方按钮创建第一条记录。</div>
-        <button style={btn(tokens, 'primary')}>新建</button>
+        <div style={{ color: tokens['--sc-fg'], fontSize: 14, fontWeight: 600 }}>{l('emptyTitle')}</div>
+        <div style={{ color: tokens['--sc-muted-fg'], fontSize: 12 }}>{l('emptyDesc')}</div>
+        <button style={btn(tokens, 'primary')}>{l('create')}</button>
       </div>
     </Framed>
   )
@@ -472,7 +476,7 @@ function IconButtonPreview({ tokens }: PreviewProps) {
   )
 }
 
-function ButtonGroupPreview({ tokens }: PreviewProps) {
+function ButtonGroupPreview({ tokens, l }: PreviewProps) {
   const seg = (_text: string, active: boolean, radius: string): CSSProperties => ({
     padding: '7px 14px',
     fontSize: 13,
@@ -486,44 +490,44 @@ function ButtonGroupPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'inline-flex' }}>
-        <span style={seg('日', true, `${tokens['--sc-radius']} 0 0 ${tokens['--sc-radius']}`)}>日</span>
-        <span style={{ ...seg('周', false, '0'), borderLeft: 'none' }}>周</span>
-        <span style={{ ...seg('月', false, `0 ${tokens['--sc-radius']} ${tokens['--sc-radius']} 0`), borderLeft: 'none' }}>月</span>
+        <span style={seg(l('day'), true, `${tokens['--sc-radius']} 0 0 ${tokens['--sc-radius']}`)}>{l('day')}</span>
+        <span style={{ ...seg(l('week'), false, '0'), borderLeft: 'none' }}>{l('week')}</span>
+        <span style={{ ...seg(l('month'), false, `0 ${tokens['--sc-radius']} ${tokens['--sc-radius']} 0`), borderLeft: 'none' }}>{l('month')}</span>
       </div>
     </Framed>
   )
 }
 
-function SearchInputPreview({ tokens }: PreviewProps) {
+function SearchInputPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ position: 'relative', fontFamily: tokens['--sc-font'] }}>
         <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: tokens['--sc-muted-fg'], fontSize: 14 }}>⌕</span>
-        <input readOnly placeholder="搜索风格、组件..." style={{ ...inputStyle(tokens), paddingLeft: 32 }} />
+        <input readOnly placeholder={l('searchPlaceholder')} style={{ ...inputStyle(tokens), paddingLeft: 32 }} />
       </div>
     </Framed>
   )
 }
 
-function TextInputPreview({ tokens }: PreviewProps) {
+function TextInputPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ fontFamily: tokens['--sc-font'] }}>
-        <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: tokens['--sc-muted-fg'] }}>用户名</label>
-        <input readOnly placeholder="输入用户名" style={inputStyle(tokens)} />
-        <p style={{ margin: '4px 0 0', fontSize: 11, color: '#ef4444' }}>用户名已被占用</p>
+        <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: tokens['--sc-muted-fg'] }}>{l('username')}</label>
+        <input readOnly placeholder={l('usernamePh')} style={inputStyle(tokens)} />
+        <p style={{ margin: '4px 0 0', fontSize: 11, color: '#ef4444' }}>{l('usernameTaken')}</p>
       </div>
     </Framed>
   )
 }
 
-function SelectFieldPreview({ tokens }: PreviewProps) {
+function SelectFieldPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ fontFamily: tokens['--sc-font'] }}>
-        <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: tokens['--sc-muted-fg'] }}>地区</label>
+        <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: tokens['--sc-muted-fg'] }}>{l('region')}</label>
         <div style={{ ...inputStyle(tokens), display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>中国大陆</span>
+          <span>{l('regionCn')}</span>
           <span style={{ color: tokens['--sc-muted-fg'] }}>▾</span>
         </div>
       </div>
@@ -531,7 +535,7 @@ function SelectFieldPreview({ tokens }: PreviewProps) {
   )
 }
 
-function CheckboxGroupPreview({ tokens }: PreviewProps) {
+function CheckboxGroupPreview({ tokens, l }: PreviewProps) {
   const row = (label: string, checked: boolean) => (
     <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: tokens['--sc-fg'], fontFamily: tokens['--sc-font'] }}>
       <span style={{ width: 16, height: 16, borderRadius: 4, border: `1px solid ${tokens['--sc-border']}`, background: checked ? tokens['--sc-primary'] : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', color: tokens['--sc-primary-fg'], fontSize: 11 }}>
@@ -543,14 +547,14 @@ function CheckboxGroupPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {row('推送通知', true)}
-        {row('营销邮件', false)}
+        {row(l('pushNotif'), true)}
+        {row(l('marketingEmail'), false)}
       </div>
     </Framed>
   )
 }
 
-function RadioGroupPreview({ tokens }: PreviewProps) {
+function RadioGroupPreview({ tokens, l }: PreviewProps) {
   const row = (label: string, checked: boolean) => (
     <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: tokens['--sc-fg'], fontFamily: tokens['--sc-font'] }}>
       <span style={{ width: 16, height: 16, borderRadius: 999, border: `1px solid ${checked ? tokens['--sc-primary'] : tokens['--sc-border']}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -562,19 +566,19 @@ function RadioGroupPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {row('标准版', true)}
-        {row('专业版', false)}
+        {row(l('planStandard'), true)}
+        {row(l('planPro'), false)}
       </div>
     </Framed>
   )
 }
 
-function TextareaPreview({ tokens }: PreviewProps) {
+function TextareaPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ fontFamily: tokens['--sc-font'] }}>
-        <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: tokens['--sc-muted-fg'] }}>描述</label>
-        <div style={{ ...inputStyle(tokens), minHeight: 72, padding: '10px 12px', color: tokens['--sc-muted-fg'] }}>请输入详细描述…</div>
+        <label style={{ display: 'block', marginBottom: 4, fontSize: 12, color: tokens['--sc-muted-fg'] }}>{l('description')}</label>
+        <div style={{ ...inputStyle(tokens), minHeight: 72, padding: '10px 12px', color: tokens['--sc-muted-fg'] }}>{l('descriptionPh')}</div>
       </div>
     </Framed>
   )
@@ -597,32 +601,32 @@ function SkeletonPreview({ tokens }: PreviewProps) {
   )
 }
 
-function SpinnerPreview({ tokens }: PreviewProps) {
+function SpinnerPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, fontFamily: tokens['--sc-font'] }}>
         <span style={{ width: 28, height: 28, borderRadius: 999, border: `3px solid ${tokens['--sc-border']}`, borderTopColor: tokens['--sc-primary'], display: 'inline-block' }} />
-        <span style={{ fontSize: 13, color: tokens['--sc-muted-fg'] }}>加载中…</span>
+        <span style={{ fontSize: 13, color: tokens['--sc-muted-fg'] }}>{l('loading')}</span>
       </div>
     </Framed>
   )
 }
 
-function DrawerPreview({ tokens }: PreviewProps) {
+function DrawerPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ position: 'relative', height: 120, borderRadius: tokens['--sc-radius'], overflow: 'hidden', fontFamily: tokens['--sc-font'] }}>
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.35)' }} />
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '55%', background: tokens['--sc-muted'], borderLeft: `1px solid ${tokens['--sc-border']}`, padding: 14, ...glass(tokens) }}>
-          <div style={{ fontWeight: 600, color: tokens['--sc-fg'], fontSize: 14, marginBottom: 8 }}>设置</div>
-          <div style={{ fontSize: 12, color: tokens['--sc-muted-fg'] }}>抽屉面板内容</div>
+          <div style={{ fontWeight: 600, color: tokens['--sc-fg'], fontSize: 14, marginBottom: 8 }}>{l('tabSettings')}</div>
+          <div style={{ fontSize: 12, color: tokens['--sc-muted-fg'] }}>{l('drawerContent')}</div>
         </div>
       </div>
     </Framed>
   )
 }
 
-function ListViewPreview({ tokens }: PreviewProps) {
+function ListViewPreview({ tokens, l }: PreviewProps) {
   const row = (title: string, sub: string) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 4px', borderBottom: `1px solid ${tokens['--sc-border']}` }}>
       <span style={{ width: 32, height: 32, borderRadius: tokens['--sc-radius'], background: tokens['--sc-primary'], opacity: 0.85 }} />
@@ -636,14 +640,14 @@ function ListViewPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ fontFamily: tokens['--sc-font'] }}>
-        {row('项目 Alpha', '2 小时前更新')}
-        {row('项目 Beta', '昨天')}
+        {row(l('projectAlpha'), l('updated2h'))}
+        {row(l('projectBeta'), l('yesterday'))}
       </div>
     </Framed>
   )
 }
 
-function TimelinePreview({ tokens }: PreviewProps) {
+function TimelinePreview({ tokens, l }: PreviewProps) {
   const item = (title: string, time: string, last?: boolean) => (
     <div style={{ display: 'flex', gap: 10 }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -658,9 +662,9 @@ function TimelinePreview({ tokens }: PreviewProps) {
   )
   return (
     <Framed tokens={tokens}>
-      {item('创建订单', '10:30')}
-      {item('支付完成', '10:32')}
-      {item('已发货', '14:00', true)}
+      {item(l('orderCreated'), '10:30')}
+      {item(l('paymentDone'), '10:32')}
+      {item(l('shipped'), '14:00', true)}
     </Framed>
   )
 }
@@ -678,7 +682,7 @@ function RatingPreview({ tokens }: PreviewProps) {
   )
 }
 
-function SidebarPreview({ tokens }: PreviewProps) {
+function SidebarPreview({ tokens, l }: PreviewProps) {
   const item = (text: string, active: boolean) => (
     <div style={{ padding: '8px 10px', borderRadius: tokens['--sc-radius'], fontSize: 12, fontFamily: tokens['--sc-font'], background: active ? tokens['--sc-primary'] : 'transparent', color: active ? tokens['--sc-primary-fg'] : tokens['--sc-muted-fg'], fontWeight: active ? 600 : 400 }}>
       {text}
@@ -688,9 +692,9 @@ function SidebarPreview({ tokens }: PreviewProps) {
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', gap: 8, minHeight: 100 }}>
         <div style={{ width: 100, background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], padding: 6, ...glass(tokens) }}>
-          {item('概览', true)}
-          {item('风格', false)}
-          {item('组件', false)}
+          {item(l('navOverview'), true)}
+          {item(l('navStyles'), false)}
+          {item(l('navComponents'), false)}
         </div>
         <div style={{ flex: 1, background: tokens['--sc-border'], opacity: 0.25, borderRadius: tokens['--sc-radius'] }} />
       </div>
@@ -698,7 +702,7 @@ function SidebarPreview({ tokens }: PreviewProps) {
   )
 }
 
-function CommandPalettePreview({ tokens }: PreviewProps) {
+function CommandPalettePreview({ tokens, l }: PreviewProps) {
   const row = (text: string, shortcut: string) => (
     <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 10px', fontSize: 12, color: tokens['--sc-fg'], fontFamily: tokens['--sc-font'] }}>
       <span>{text}</span>
@@ -709,16 +713,16 @@ function CommandPalettePreview({ tokens }: PreviewProps) {
     <Framed tokens={tokens}>
       <div style={{ background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], overflow: 'hidden', boxShadow: tokens['--sc-shadow'], ...glass(tokens) }}>
         <div style={{ padding: '8px 10px', borderBottom: `1px solid ${tokens['--sc-border']}` }}>
-          <input readOnly placeholder="输入命令或搜索…" style={{ ...inputStyle(tokens), border: 'none', background: 'transparent', padding: 0 }} />
+          <input readOnly placeholder={l('commandPh')} style={{ ...inputStyle(tokens), border: 'none', background: 'transparent', padding: 0 }} />
         </div>
-        {row('跳转：风格库', '↵')}
-        {row('复制当前 Prompt', '⌘C')}
+        {row(l('cmdGoStyles'), '↵')}
+        {row(l('cmdCopyPrompt'), '⌘C')}
       </div>
     </Framed>
   )
 }
 
-function DatePickerPreview({ tokens }: PreviewProps) {
+function DatePickerPreview({ tokens, l }: PreviewProps) {
   const day = (n: number, active?: boolean) => (
     <span style={{ width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', borderRadius: tokens['--sc-radius'], fontSize: 11, fontFamily: tokens['--sc-font'], background: active ? tokens['--sc-primary'] : 'transparent', color: active ? tokens['--sc-primary-fg'] : tokens['--sc-fg'] }}>{n}</span>
   )
@@ -726,7 +730,7 @@ function DatePickerPreview({ tokens }: PreviewProps) {
     <Framed tokens={tokens}>
       <div style={{ background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], padding: 10, fontFamily: tokens['--sc-font'], ...glass(tokens) }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 12, fontWeight: 600, color: tokens['--sc-fg'] }}>
-          <span>2026 年 6 月</span>
+          <span>{l('calendarTitle')}</span>
           <span style={{ color: tokens['--sc-muted-fg'] }}>‹ ›</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2, textAlign: 'center' }}>
@@ -737,24 +741,24 @@ function DatePickerPreview({ tokens }: PreviewProps) {
   )
 }
 
-function FileUploadPreview({ tokens }: PreviewProps) {
+function FileUploadPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ border: `2px dashed ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], padding: 16, textAlign: 'center', fontFamily: tokens['--sc-font'] }}>
         <div style={{ fontSize: 22, marginBottom: 6 }}>📁</div>
-        <div style={{ fontSize: 13, color: tokens['--sc-fg'], fontWeight: 600 }}>拖拽文件到此处</div>
-        <div style={{ fontSize: 11, color: tokens['--sc-muted-fg'], marginTop: 4 }}>或点击选择 · 最大 10MB</div>
+        <div style={{ fontSize: 13, color: tokens['--sc-fg'], fontWeight: 600 }}>{l('dropFiles')}</div>
+        <div style={{ fontSize: 11, color: tokens['--sc-muted-fg'], marginTop: 4 }}>{l('fileHint')}</div>
       </div>
     </Framed>
   )
 }
 
-function SliderPreview({ tokens }: PreviewProps) {
+function SliderPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ fontFamily: tokens['--sc-font'] }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: tokens['--sc-muted-fg'], marginBottom: 6 }}>
-          <span>音量</span><span>72%</span>
+          <span>{l('volume')}</span><span>72%</span>
         </div>
         <div style={{ position: 'relative', height: 6, background: tokens['--sc-muted'], borderRadius: 999 }}>
           <div style={{ width: '72%', height: '100%', background: tokens['--sc-primary'], borderRadius: 999 }} />
@@ -765,30 +769,30 @@ function SliderPreview({ tokens }: PreviewProps) {
   )
 }
 
-function PopoverPreview({ tokens }: PreviewProps) {
+function PopoverPreview({ tokens, l }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, fontFamily: tokens['--sc-font'] }}>
-        <button style={btn(tokens, 'secondary')}>更多信息</button>
+        <button style={btn(tokens, 'secondary')}>{l('moreInfo')}</button>
         <div style={{ background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], padding: '10px 12px', boxShadow: tokens['--sc-shadow'], fontSize: 12, color: tokens['--sc-fg'], ...glass(tokens) }}>
-          弹出层说明文字
+          {l('popoverBody')}
         </div>
       </div>
     </Framed>
   )
 }
 
-function ContextMenuPreview({ tokens }: PreviewProps) {
+function ContextMenuPreview({ tokens, l }: PreviewProps) {
   const item = (text: string) => (
     <div style={{ padding: '7px 12px', fontSize: 12, color: tokens['--sc-fg'], fontFamily: tokens['--sc-font'] }}>{text}</div>
   )
   return (
     <Framed tokens={tokens}>
       <div style={{ width: 140, background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], padding: 4, boxShadow: tokens['--sc-shadow'], ...glass(tokens) }}>
-        {item('复制')}
-        {item('粘贴')}
+        {item(l('copy'))}
+        {item(l('paste'))}
         <div style={{ height: 1, background: tokens['--sc-border'], margin: '4px 0' }} />
-        {item('删除')}
+        {item(l('delete'))}
       </div>
     </Framed>
   )
@@ -809,7 +813,7 @@ function CarouselPreview({ tokens }: PreviewProps) {
   )
 }
 
-function ChipInputPreview({ tokens }: PreviewProps) {
+function ChipInputPreview({ tokens, l }: PreviewProps) {
   const chip = (text: string) => (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: 999, padding: '3px 8px', fontSize: 11, color: tokens['--sc-fg'], fontFamily: tokens['--sc-font'] }}>
       {text} <span style={{ color: tokens['--sc-muted-fg'] }}>×</span>
@@ -819,13 +823,13 @@ function ChipInputPreview({ tokens }: PreviewProps) {
     <Framed tokens={tokens}>
       <div style={{ ...inputStyle(tokens), display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', minHeight: 38 }}>
         {chip('React')}{chip('Tailwind')}
-        <span style={{ fontSize: 12, color: tokens['--sc-muted-fg'] }}>添加标签…</span>
+        <span style={{ fontSize: 12, color: tokens['--sc-muted-fg'] }}>{l('addTag')}</span>
       </div>
     </Framed>
   )
 }
 
-function NotificationCenterPreview({ tokens }: PreviewProps) {
+function NotificationCenterPreview({ tokens, l }: PreviewProps) {
   const item = (title: string, time: string) => (
     <div style={{ padding: '10px 12px', borderBottom: `1px solid ${tokens['--sc-border']}` }}>
       <div style={{ fontSize: 12, fontWeight: 600, color: tokens['--sc-fg'], fontFamily: tokens['--sc-font'] }}>{title}</div>
@@ -835,9 +839,9 @@ function NotificationCenterPreview({ tokens }: PreviewProps) {
   return (
     <Framed tokens={tokens}>
       <div style={{ background: tokens['--sc-muted'], border: `1px solid ${tokens['--sc-border']}`, borderRadius: tokens['--sc-radius'], overflow: 'hidden', ...glass(tokens) }}>
-        <div style={{ padding: '8px 12px', fontSize: 12, fontWeight: 600, color: tokens['--sc-fg'], borderBottom: `1px solid ${tokens['--sc-border']}` }}>通知</div>
-        {item('风格已应用', '2 分钟前')}
-        {item('Prompt 已复制', '1 小时前')}
+        <div style={{ padding: '8px 12px', fontSize: 12, fontWeight: 600, color: tokens['--sc-fg'], borderBottom: `1px solid ${tokens['--sc-border']}` }}>{l('notifications')}</div>
+        {item(l('notifStyleApplied'), l('ago2m'))}
+        {item(l('notifPromptCopied'), l('ago1h'))}
       </div>
     </Framed>
   )
@@ -846,19 +850,19 @@ function NotificationCenterPreview({ tokens }: PreviewProps) {
 const renderers: Record<string, (props: PreviewProps) => React.ReactElement> = {
   'modal-dialog': ModalPreview,
   'toast-notifications': ToastPreview,
-  'table-basic': ({ tokens }) => (
-    <Framed tokens={tokens}>
-      <ShowcaseTable tokens={tokens} />
+  'table-basic': (props) => (
+    <Framed tokens={props.tokens}>
+      <ShowcaseTable tokens={props.tokens} />
     </Framed>
   ),
-  navbar: ({ tokens }) => (
-    <Framed tokens={tokens}>
-      <ShowcaseNav tokens={tokens} />
+  navbar: (props) => (
+    <Framed tokens={props.tokens}>
+      <ShowcaseNav tokens={props.tokens} />
     </Framed>
   ),
-  'sign-in-form': ({ tokens }) => (
-    <Framed tokens={tokens}>
-      <ShowcaseForm tokens={tokens} />
+  'sign-in-form': (props) => (
+    <Framed tokens={props.tokens}>
+      <ShowcaseForm tokens={props.tokens} />
     </Framed>
   ),
   buttons: ButtonsPreview,
@@ -909,8 +913,19 @@ export function hasThemedPreview(id: string): boolean {
 }
 
 /** Render a component preview using the given design tokens (follows applied style). */
-export function ThemedComponentPreview({ id, tokens, compact }: { id: string; tokens: Tokens; compact?: boolean }) {
+export function ThemedComponentPreview({
+  id,
+  tokens,
+  compact,
+  locale,
+}: {
+  id: string
+  tokens: Tokens
+  compact?: boolean
+  locale: Locale
+}) {
   const Renderer = renderers[id]
   if (!Renderer) return null
-  return <Renderer tokens={tokens} compact={compact} />
+  const l = (key: PreviewLabelKey) => pl(key, locale)
+  return <Renderer tokens={tokens} compact={compact} l={l} />
 }

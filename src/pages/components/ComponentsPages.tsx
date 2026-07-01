@@ -12,13 +12,14 @@ import { useComponentFilter } from '@/hooks/useComponentFilter'
 import { useIsDesktop, useIsMobile } from '@/hooks/useMediaQuery'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components/ui/tabs'
 import { PreviewFrame, PromptPanel } from '@/components/preview/PromptPanel'
-import { components, getComponentById, getComponentCategories } from '@/data/components/registry'
+import { ComponentImportPanel } from '@/components/catalog/ComponentImportPanel'
+import { getComponentById, getComponentCategories } from '@/data/components/registry'
 import { ThemedComponentPreview, hasThemedPreview } from '@/components/showcase/componentPreviews'
 import { useApp } from '@/contexts/AppContext'
 import { useMemo } from 'react'
 
 export function ComponentsListPage() {
-  const { t, tr } = useApp()
+  const { t, tr, allComponents } = useApp()
   const {
     query,
     setQuery,
@@ -32,7 +33,7 @@ export function ComponentsListPage() {
     setPage,
     totalPages,
     total,
-  } = useComponentFilter(components)
+  } = useComponentFilter(allComponents)
 
   const categories = useMemo(
     () =>
@@ -56,9 +57,12 @@ export function ComponentsListPage() {
       </Header>
       <SidePager page={page} totalPages={totalPages} onPageChange={setPage} />
       <main className="flex-1 p-4 md:p-6 lg:px-20">
-        <div className="mb-4">
-          <h1 className="text-xl font-bold">{t('components.title')}</h1>
-          <p className="text-sm text-muted-foreground">{t('components.count', { n: total })}</p>
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-xl font-bold">{t('components.title')}</h1>
+            <p className="text-sm text-muted-foreground">{t('components.count', { n: total })}</p>
+          </div>
+          <ComponentImportPanel />
         </div>
         <CategoryChips
           categories={categories}
@@ -90,7 +94,7 @@ export function ComponentDetailPage() {
   const component = getComponentById(id ?? '')
   const isMobile = useIsMobile()
   const isDesktop = useIsDesktop()
-  const { activeTokens, t, tr } = useApp()
+  const { activeTokens, t, tr, locale } = useApp()
 
   if (!component) {
     return (
@@ -113,7 +117,7 @@ export function ComponentDetailPage() {
         {t('components.preview')}
       </div>
       <div className="p-4">
-        <ThemedComponentPreview id={component.id} tokens={activeTokens} />
+        <ThemedComponentPreview id={component.id} tokens={activeTokens} locale={locale} />
       </div>
     </div>
   ) : (

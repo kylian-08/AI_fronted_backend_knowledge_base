@@ -1054,7 +1054,86 @@ Animation: translateX 300ms ease`,
 ]
 
 export function getComponentById(id: string): ComponentItem | undefined {
-  return components.find((c) => c.id === id || c.slug === id)
+  return getAllComponentsList().find((c) => c.id === id || c.slug === id)
+}
+
+const COMPONENT_IMPORT_KEY = 'prompt-assistant-imported-components'
+
+let importedComponents: ComponentItem[] = []
+
+function loadImportedComponents(): ComponentItem[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(COMPONENT_IMPORT_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as { components?: ComponentItem[] }
+    return Array.isArray(parsed.components) ? parsed.components : []
+  } catch {
+    return []
+  }
+}
+
+function saveImportedComponents(list: ComponentItem[]) {
+  importedComponents = list
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(COMPONENT_IMPORT_KEY, JSON.stringify({ version: '1.0', components: list }))
+  }
+}
+
+export const bundledComponents: ComponentItem[] = components
+
+export function getImportedComponents(): ComponentItem[] {
+  if (importedComponents.length === 0) importedComponents = loadImportedComponents()
+  return importedComponents
+}
+
+export function getAllComponentsList(): ComponentItem[] {
+  const imported = getImportedComponents()
+  const bundledIds = new Set(bundledComponents.map((c) => c.id))
+  const uniqueImported = imported.filter((c) => !bundledIds.has(c.id))
+  return [...bundledComponents, ...uniqueImported]
+}
+
+export function importComponentsFromJson(json: unknown): { ok: boolean; count: number; error?: string } {
+  try {
+    let incoming: ComponentItem[] = []
+    if (Array.isArray(json)) {
+      incoming = json as ComponentItem[]
+    } else if (json && typeof json === 'object' && 'components' in json) {
+      incoming = (json as { components: ComponentItem[] }).components
+    } else {
+      return { ok: false, count: 0, error: 'Invalid format: expected { components: [...] } or array' }
+    }
+
+    const validated = incoming.filter(
+      (c) => c.id && c.title && c.prompt,
+    ) as ComponentItem[]
+
+    if (validated.length === 0) {
+      return { ok: false, count: 0, error: 'No valid components found' }
+    }
+
+    const existing = getImportedComponents()
+    const map = new Map(existing.map((c) => [c.id, c]))
+    validated.forEach((c) => {
+      map.set(c.id, {
+        ...c,
+        kind: 'component',
+        status: c.status ?? 'ready',
+        source: 'imported',
+        previewType: c.previewType ?? 'html',
+        previewSource: c.previewSource ?? '',
+      })
+    })
+    saveImportedComponents(Array.from(map.values()))
+    return { ok: true, count: validated.length }
+  } catch {
+    return { ok: false, count: 0, error: 'Failed to parse JSON' }
+  }
+}
+
+export function exportImportedComponents(): string {
+  return JSON.stringify({ version: '1.0', components: getImportedComponents() }, null, 2)
 }
 
 export function getComponentCategories(): { key: string; name: { 'zh-CN': string; 'en-US': string } }[] {

@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { Locale, StyleItem } from '@/types/catalog'
+import type { Locale, StyleItem, ComponentItem } from '@/types/catalog'
 import { getLocale, setLocale as persistLocale, localized } from '@/lib/i18n'
 import { messages, type MessageKey } from '@/lib/messages'
 import {
@@ -22,6 +22,11 @@ import {
   importStylesFromJson,
   exportImportedStyles,
 } from '@/data/styles/registry'
+import {
+  getAllComponentsList,
+  importComponentsFromJson,
+  exportImportedComponents,
+} from '@/data/components/registry'
 
 /** Default showcase tokens matching the app's built-in dark theme. */
 export const DEFAULT_SC_TOKENS: Record<string, string> = {
@@ -48,8 +53,12 @@ interface AppContextValue {
   resetTheme: () => void
   importStyles: (json: unknown) => { ok: boolean; count: number; error?: string }
   exportStyles: () => string
+  importComponents: (json: unknown) => { ok: boolean; count: number; error?: string }
+  exportComponents: () => string
   allStyles: StyleItem[]
+  allComponents: ComponentItem[]
   refreshStyles: () => void
+  refreshComponents: () => void
   /** Design tokens of the currently applied style (or the default theme). */
   activeTokens: Record<string, string>
 }
@@ -60,6 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(getLocale)
   const [appliedStyleId, setAppliedStyleId] = useState<string | null>(getAppliedStyleId)
   const [styleVersion, setStyleVersion] = useState(0)
+  const [componentVersion, setComponentVersion] = useState(0)
 
   useEffect(() => {
     restoreAppliedTheme(getStyleById)
@@ -105,12 +115,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return result
   }, [])
 
+  const importComponents = useCallback((json: unknown) => {
+    const result = importComponentsFromJson(json)
+    if (result.ok) setComponentVersion((v) => v + 1)
+    return result
+  }, [])
+
   const refreshStyles = useCallback(() => setStyleVersion((v) => v + 1), [])
+  const refreshComponents = useCallback(() => setComponentVersion((v) => v + 1), [])
 
   const allStyles = useMemo(() => {
     void styleVersion
     return getAllStylesList()
   }, [styleVersion])
+
+  const allComponents = useMemo(() => {
+    void componentVersion
+    return getAllComponentsList()
+  }, [componentVersion])
 
   const activeTokens = useMemo(() => {
     void styleVersion
@@ -132,11 +154,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       resetTheme,
       importStyles,
       exportStyles: exportImportedStyles,
+      importComponents,
+      exportComponents: exportImportedComponents,
       allStyles,
+      allComponents,
       refreshStyles,
+      refreshComponents,
       activeTokens,
     }),
-    [locale, setLocale, t, tr, appliedStyleId, applyStyle, resetTheme, importStyles, allStyles, refreshStyles, activeTokens],
+    [locale, setLocale, t, tr, appliedStyleId, applyStyle, resetTheme, importStyles, importComponents, allStyles, allComponents, refreshStyles, refreshComponents, activeTokens],
   )
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>

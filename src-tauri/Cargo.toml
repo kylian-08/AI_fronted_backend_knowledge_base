@@ -1,6 +1,6 @@
 [package]
 name = "prompt-assistant"
-version = "0.2.1"
+version = "0.3.0"
 description = "Prompt Assistant — UI Style & Component Prompt Platform"
 authors = ["Prompt Assistant"]
 edition = "2021"

@@ -28,6 +28,9 @@ const ArchitecturePlaceholderPage = lazy(() =>
 const ComposerPage = lazy(() =>
   import('@/pages/ComposerPage').then((m) => ({ default: m.ComposerPage })),
 )
+const AgentStudioPage = lazy(() =>
+  import('@/pages/agent/AgentStudioPage').then((m) => ({ default: m.AgentStudioPage })),
+)
 
 function PageLoader() {
   return (
@@ -55,6 +58,7 @@ export const router = createBrowserRouter([
   { path: '/backend/:id', element: withSuspense(BackendDetailPage) },
   { path: '/architecture', element: withSuspense(ArchitecturePlaceholderPage) },
   { path: '/composer', element: withSuspense(ComposerPage) },
+  { path: '/agent', element: withSuspense(AgentStudioPage) },
   {
     path: '*',
     element: (

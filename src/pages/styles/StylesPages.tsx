@@ -3,6 +3,7 @@ import { ArrowLeft, Check } from 'lucide-react'
 import { Layout, Header } from '@/components/layout/Layout'
 import { SearchBar } from '@/components/catalog/SearchBar'
 import { FilterChips } from '@/components/catalog/FilterChips'
+import { CategoryChips } from '@/components/catalog/CategoryChips'
 import { StyleCard } from '@/components/catalog/StyleCard'
 import { StyleImportPanel } from '@/components/catalog/StyleImportPanel'
 import { Pagination } from '@/components/catalog/Pagination'
@@ -18,12 +19,16 @@ import { Button } from '@/components/ui/button'
 import { getStyleById } from '@/data/styles/registry'
 import { useApp } from '@/contexts/AppContext'
 import { useParams } from 'react-router-dom'
+import { useMemo } from 'react'
+import { STYLE_BUCKET_META, type StyleBucket } from '@/lib/styleCatalog'
 
 export function StylesListPage() {
-  const { allStyles, t } = useApp()
+  const { allStyles, t, tr } = useApp()
   const {
     query,
     setQuery,
+    selectedBucket,
+    setSelectedBucket,
     selectedTags,
     setSelectedTags,
     paginated,
@@ -33,6 +38,15 @@ export function StylesListPage() {
     totalPages,
     total,
   } = useStyleFilter(allStyles)
+
+  const styleBuckets = useMemo(
+    () =>
+      (Object.keys(STYLE_BUCKET_META) as StyleBucket[]).map((key) => ({
+        key,
+        label: tr(STYLE_BUCKET_META[key]),
+      })),
+    [tr],
+  )
 
   usePageKeys(page, totalPages, setPage)
 
@@ -50,6 +64,13 @@ export function StylesListPage() {
           </div>
           <StyleImportPanel />
         </div>
+        <CategoryChips
+          categories={styleBuckets}
+          selected={selectedBucket}
+          onChange={(key) => setSelectedBucket(key as StyleBucket | null)}
+          allLabel={t('styles.categoryAll')}
+          className="mb-3"
+        />
         <FilterChips
           tags={allTags}
           selected={selectedTags}
