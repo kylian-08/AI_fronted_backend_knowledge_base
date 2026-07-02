@@ -1,7 +1,6 @@
 # Prompt Assistant 开发文档 / Roadmap
 
-> 最后更新：2026-07-02　当前已发布版本：**`v0.3.0`**（已 commit / push / tag / GitHub Release，含可下载 exe）
-> 本地工作区未发布改动：Phase 1（动效系统）首批实现，见第 5 节
+> 最后更新：2026-07-02　当前版本：**`v0.4.0`**（Phase 1 动效系统首批实现，已 commit，见第 5 节）
 >
 > 本文档面向：项目维护者本人、未来加入的协作者、以及需要快速理解现状再继续开发的 AI Agent。
 > **约定**：每完成一个 Phase 的收尾工作，回来更新本文档的「当前状态」「版本历史」两节，并把对应 Phase 的 checklist 打勾。
@@ -71,7 +70,8 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 | `v0.1.0`（Initial commit） | 已发布 | 基础 Prompt 库、PWA、Docker、Tauri 骨架 |
 | `v0.2.0` | 已发布 | 32 个精选风格详细化、应用到本应用主题化、参考图复制/下载、风格 JSON 导入、玻璃拟态修复、侧边栏 sticky、Service Worker 缓存修复 |
 | `v0.2.1` | 已发布 | 组件库从 5 个扩展到 45 个、组件分类筛选、组件详情页元信息、组件预览主题化 |
-| **`v0.3.0`** | **已发布（当前基线）** | AI Agent Studio、组合器重构（搜索+分类）、风格分类 Tab、组件导入导出、后端模板 7→11、组件预览 i18n |
+| `v0.3.0` | 已发布 | AI Agent Studio、组合器重构（搜索+分类）、风格分类 Tab、组件导入导出、后端模板 7→11、组件预览 i18n |
+| **`v0.4.0`** | **当前基线** | 动效系统（Motion Layer）首批实现：`MotionPreset` 数据结构、32 精选风格动效性格分配、`MotionEnter`/`MotionLift`/`MotionButton` 组件、接入风格 Showcase / 列表卡片 / 约 35 个组件预览 |
 
 > Release + 可下载 exe 见 GitHub Releases 页面，三个版本均已上传。
 

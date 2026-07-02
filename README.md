@@ -16,6 +16,7 @@
 - **Prompt 组合器**：风格（含已导入）+ 组件 + 后端一键组合，支持搜索与分类筛选
 - **风格分类**：精选 / 核心 / 变体 / 已导入四大分类 Tab，快速定位目标风格
 - **AI Agent Studio（Beta）**：描述产品与品牌，Agent 从风格库与组件库中自动编排出可交互的界面方案；内置离线启发式引擎，预留真实模型接入接口
+- **动效系统（Motion Layer）**：风格详情页与组件预览接入随风格联动的进场/悬停/点击动效（`snappy` / `editorial` / `bouncy` / `none` 四种性格），32 个精选风格逐一手动分配
 - **中英文切换** & **键盘左右键 / 侧边悬浮按钮翻页**
 
 ### UI 组件分类（45 个）
@@ -29,6 +30,15 @@
 | 表单 Forms | 登录表单、搜索框、文本输入、下拉选择、复选框组、单选组、多行文本、日期选择、文件上传、滑块、标签输入 |
 
 ## Release Notes
+
+### v0.4.0 (2026-07-02)
+
+**新增**
+- 🎬 **动效系统（Motion Layer）**：引入 `motion`（Framer Motion）依赖，新增 `MotionPreset` 数据结构（`snappy` / `editorial` / `bouncy` / `none` 四种动效性格，含 `duration`/`delay`/`damping`/`stiffness`/`mass` 等参数）。32 个精选风格逐一手动分配匹配的动效性格（如 Apple 毛玻璃 → 柔和 `bouncy`，赛博朋克/科幻 HUD → 快速 `snappy`，瑞士国际主义/包豪斯 → 克制的 `editorial`，Windows 98/水墨 → `none`），60 个程序化变体走标签启发式兜底。
+- ✨ 新增可复用动效组件 `MotionEnter`（进场淡入+错位延迟）、`MotionLift`（卡片悬停抬升）、`MotionButton`（按钮悬停/点击反馈），接入风格详情页 Showcase、风格库/组件库列表卡片、约 35/45 个组件预览的共享容器，以及「按钮」组件预览的完整交互示例。
+- 🔗 `AppContext` 新增 `activeMotionPreset`，随「已应用风格」实时联动。
+
+**下载**：见本页 Assets 中的 `Prompt-Assistant-v0.4.0.exe`（Windows 便携版，免安装）。
 
 ### v0.3.0 (2026-07-01)
 
