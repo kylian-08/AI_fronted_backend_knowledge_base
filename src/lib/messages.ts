@@ -136,6 +136,37 @@ export const messages = {
   'agent.section.faq': { 'zh-CN': '常见问题', 'en-US': 'FAQ' },
   'agent.section.footer': { 'zh-CN': '页脚', 'en-US': 'Footer' },
   'agent.section.custom': { 'zh-CN': '自定义区块', 'en-US': 'Custom' },
+  'motion.title': { 'zh-CN': '动效调试', 'en-US': 'Motion Tuning' },
+  'motion.hint': {
+    'zh-CN': '拖动滑块实时调整预览动效（仅本次会话生效，不会保存）',
+    'en-US': 'Drag sliders to tune the preview motion live (session only, not saved)',
+  },
+  'motion.replay': { 'zh-CN': '重播进场', 'en-US': 'Replay' },
+  'motion.reset': { 'zh-CN': '重置', 'en-US': 'Reset' },
+  'motion.copyCode': { 'zh-CN': '复制动效代码', 'en-US': 'Copy Motion Code' },
+  'motion.preset.snappy': { 'zh-CN': '干脆', 'en-US': 'Snappy' },
+  'motion.preset.editorial': { 'zh-CN': '沉稳', 'en-US': 'Editorial' },
+  'motion.preset.bouncy': { 'zh-CN': '弹性', 'en-US': 'Bouncy' },
+  'motion.preset.none': { 'zh-CN': '无动效', 'en-US': 'None' },
+  'motion.stiffness': { 'zh-CN': '刚度 stiffness', 'en-US': 'Stiffness' },
+  'motion.damping': { 'zh-CN': '阻尼 damping', 'en-US': 'Damping' },
+  'motion.mass': { 'zh-CN': '质量 mass', 'en-US': 'Mass' },
+  'motion.enterDuration': { 'zh-CN': '进场时长 (s)', 'en-US': 'Enter duration (s)' },
+  'motion.enterDelay': { 'zh-CN': '进场延迟 (s)', 'en-US': 'Enter delay (s)' },
+  'motion.hoverScale': { 'zh-CN': '悬停缩放', 'en-US': 'Hover scale' },
+  'motion.pressScale': { 'zh-CN': '按下缩放', 'en-US': 'Press scale' },
+  'motion.hoverLift': { 'zh-CN': '悬停上浮 (px)', 'en-US': 'Hover lift (px)' },
+  'code.copyCss': { 'zh-CN': '复制 CSS 变量', 'en-US': 'Copy CSS Vars' },
+  'code.copyTailwind': { 'zh-CN': '复制 Tailwind 配置', 'en-US': 'Copy Tailwind Config' },
+  'code.copyReact': { 'zh-CN': '复制 React 代码', 'en-US': 'Copy React Code' },
+  'code.reactHint': {
+    'zh-CN': '独立 React 组件，已内嵌当前风格 tokens，可直接粘贴使用',
+    'en-US': 'Standalone React component with current style tokens baked in',
+  },
+  'code.reactScaffold': {
+    'zh-CN': '该组件导出为通用脚手架（tokens 精确，结构需自行调整）',
+    'en-US': 'Exports as a generic scaffold (exact tokens, adapt the structure)',
+  },
 } as const
 
 export type MessageKey = keyof typeof messages

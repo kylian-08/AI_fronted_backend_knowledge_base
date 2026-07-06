@@ -14,7 +14,12 @@ import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/components/ui/ta
 import { PreviewFrame, PromptPanel } from '@/components/preview/PromptPanel'
 import { ComponentImportPanel } from '@/components/catalog/ComponentImportPanel'
 import { getComponentById, getComponentCategories } from '@/data/components/registry'
+import { getStyleById } from '@/data/styles/registry'
 import { ThemedComponentPreview, hasThemedPreview } from '@/components/showcase/componentPreviews'
+import { MotionOverrideProvider } from '@/components/motion/MotionPrimitives'
+import { MotionPanel } from '@/components/motion/MotionPanel'
+import { useMotionTuning } from '@/hooks/useMotionTuning'
+import { componentToReactCode, hasDedicatedCodeTemplate } from '@/lib/codeExport'
 import { useApp } from '@/contexts/AppContext'
 import { useMemo } from 'react'
 
@@ -94,7 +99,8 @@ export function ComponentDetailPage() {
   const component = getComponentById(id ?? '')
   const isMobile = useIsMobile()
   const isDesktop = useIsDesktop()
-  const { activeTokens, t, tr, locale } = useApp()
+  const { activeTokens, activeMotionPreset, appliedStyleId, t, tr, locale } = useApp()
+  const tuning = useMotionTuning(activeMotionPreset)
 
   if (!component) {
     return (
@@ -110,15 +116,31 @@ export function ComponentDetailPage() {
   }
 
   const categoryName = getComponentCategories().find((c) => c.key === component.category)?.name
+  const themed = hasThemedPreview(component.id)
+  const styleName = appliedStyleId ? getStyleById(appliedStyleId)?.title['en-US'] : undefined
+  const reactCode = componentToReactCode(component, activeTokens, {
+    styleName,
+    motion: tuning.params,
+  })
 
-  const preview = hasThemedPreview(component.id) ? (
-    <div className="overflow-hidden rounded-xl border border-border bg-card">
-      <div className="border-b border-border px-4 py-2 text-sm font-medium text-muted-foreground">
-        {t('components.preview')}
+  const preview = themed ? (
+    <div className="space-y-4">
+      <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="border-b border-border px-4 py-2 text-sm font-medium text-muted-foreground">
+          {t('components.preview')}
+        </div>
+        <div className="p-4">
+          <MotionOverrideProvider value={tuning.preset}>
+            <div key={tuning.replayKey}>
+              <ThemedComponentPreview id={component.id} tokens={activeTokens} locale={locale} />
+            </div>
+          </MotionOverrideProvider>
+        </div>
+        <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
+          {t(hasDedicatedCodeTemplate(component.id) ? 'code.reactHint' : 'code.reactScaffold')}
+        </p>
       </div>
-      <div className="p-4">
-        <ThemedComponentPreview id={component.id} tokens={activeTokens} locale={locale} />
-      </div>
+      <MotionPanel tuning={tuning} />
     </div>
   ) : (
     <PreviewFrame html={component.previewSource} title={t('components.preview')} />
@@ -176,11 +198,18 @@ export function ComponentDetailPage() {
               </p>
             )}
           </div>
-          <CopyButton
-            text={tr(component.prompt)}
-            label={t('styles.copy')}
-            copiedLabel={t('styles.copied')}
-          />
+          <div className="flex flex-wrap gap-2">
+            <CopyButton
+              text={tr(component.prompt)}
+              label={t('styles.copy')}
+              copiedLabel={t('styles.copied')}
+            />
+            <CopyButton
+              text={reactCode}
+              label={t('code.copyReact')}
+              copiedLabel={t('styles.copied')}
+            />
+          </div>
         </div>
 
         {isMobile ? (

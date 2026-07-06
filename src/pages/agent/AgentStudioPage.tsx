@@ -3,6 +3,10 @@ import { Layout, Header } from '@/components/layout/Layout'
 import { Button } from '@/components/ui/button'
 import { CopyButton } from '@/components/catalog/CopyButton'
 import { ThemedComponentPreview, hasThemedPreview } from '@/components/showcase/componentPreviews'
+import { MotionOverrideProvider } from '@/components/motion/MotionPrimitives'
+import { MotionPanel } from '@/components/motion/MotionPanel'
+import { useMotionTuning } from '@/hooks/useMotionTuning'
+import { resolveMotionPresetKey } from '@/lib/motion/presets'
 import { getAgentConfig, getAgentProvider, listAgentProviders, saveAgentConfig } from '@/lib/agent'
 import { AgentNotConfiguredError } from '@/types/agent'
 import type { AgentBrief, AgentSectionKind, GeneratedUISpec } from '@/types/agent'
@@ -51,6 +55,7 @@ export function AgentStudioPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<GeneratedUISpec | null>(null)
+  const tuning = useMotionTuning('none')
 
   function toggleSection(kind: AgentSectionKind) {
     setSections((prev) => (prev.includes(kind) ? prev.filter((k) => k !== kind) : [...prev, kind]))
@@ -77,6 +82,7 @@ export function AgentStudioPage() {
       const provider = getAgentProvider(providerId)
       const spec = await provider.generate(brief, { styles: allStyles, components: allComponents })
       setResult(spec)
+      tuning.selectPreset(resolveMotionPresetKey(spec.style))
     } catch (err) {
       setError(err instanceof AgentNotConfiguredError ? t('agent.notConfigured') : err instanceof Error ? err.message : String(err))
     } finally {
@@ -211,7 +217,14 @@ export function AgentStudioPage() {
                     <CopyButton text={result.prompt} label={t('agent.copyPrompt')} copiedLabel={t('styles.copied')} />
                   </div>
                 </div>
-                <div className="space-y-3">
+                <details className="group">
+                  <summary className="cursor-pointer select-none rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground">
+                    {t('motion.title')}
+                  </summary>
+                  <MotionPanel tuning={tuning} className="mt-2" />
+                </details>
+                <MotionOverrideProvider value={tuning.preset}>
+                <div className="space-y-3" key={tuning.replayKey}>
                   {result.sections.map((section) => (
                     <div key={section.id} className="overflow-hidden rounded-xl border border-border bg-card">
                       <div className="border-b border-border px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -241,6 +254,7 @@ export function AgentStudioPage() {
                     </div>
                   ))}
                 </div>
+                </MotionOverrideProvider>
               </div>
             )}
           </div>

@@ -17,6 +17,7 @@ import { ShowcaseShell } from '@/components/showcase/ShowcaseShell'
 import { PromptPanel } from '@/components/preview/PromptPanel'
 import { Button } from '@/components/ui/button'
 import { getStyleById } from '@/data/styles/registry'
+import { styleCodeBundle } from '@/lib/codeExport'
 import { useApp } from '@/contexts/AppContext'
 import { useParams } from 'react-router-dom'
 import { useMemo } from 'react'
@@ -110,6 +111,7 @@ export function StyleDetailPage() {
   }
 
   const isApplied = appliedStyleId === style.id
+  const code = styleCodeBundle(style)
   const preview = <ShowcaseShell style={style} />
   const prompt = (
     <PromptPanel promptZh={style.prompt['zh-CN']} promptEn={style.prompt['en-US']} />
@@ -149,6 +151,8 @@ export function StyleDetailPage() {
               {isApplied ? t('styles.applied') : t('styles.apply')}
             </Button>
             <CopyButton text={tr(style.prompt)} label={t('styles.copy')} copiedLabel={t('styles.copied')} />
+            <CopyButton text={code.css} label={t('code.copyCss')} copiedLabel={t('styles.copied')} />
+            <CopyButton text={code.tailwind} label={t('code.copyTailwind')} copiedLabel={t('styles.copied')} />
             <CopyImageButton style={style} label={t('styles.copyImage')} copiedLabel={t('styles.copied')} />
             <DownloadImageButton style={style} label={t('styles.downloadImage')} />
           </div>

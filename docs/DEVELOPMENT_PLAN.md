@@ -132,31 +132,35 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 
 - [ ] 剩余 ~10 个未使用 `Framed` 的组件预览（内部各自定义容器）尚未接入进场动效
 - [ ] `Toggle Switch`、`Dropdown Menu`、`Tabs` 等更适合展示状态切换动效的组件，目前只有基础进场，没有针对性的状态过渡动效
-- [ ] Agent Studio 生成结果页尚未接入 motion（生成的区块目前是静态排列）
+- [x] Agent Studio 生成结果页接入 motion —— Phase 3 已完成：结果区块包裹在 `MotionOverrideProvider` 中，随调参面板实时联动（2026-07-02）
 - [ ] 60 个程序化变体的 tag 启发式覆盖面有限，多数会落到默认 `none`，可考虑扩大规则表
 
 **验收标准**（原定）：任选一个风格切换后，组件预览的 hover/进场节奏应有可感知差异，而不是所有风格动效完全一致。—— ✅ 已满足（可在风格详情页对比如「Apple 毛玻璃」vs「瑞士国际主义」vs「Windows 98」的 hover 手感）。
 
-### Phase 2：前端代码直出
+### Phase 2：前端代码直出 —— ✅ 首批已完成（2026-07-02）
 
 **目标**：从「只给 Prompt」升级到「可直接使用的代码片段」。
 
-- [ ] Token 导出：一键复制/下载当前风格的 `:root { --sc-*: ... }` CSS 或 Tailwind `theme.extend` 配置
-- [ ] 单组件代码导出：为每个组件预览增加「复制 React 代码」按钮，输出带当前 tokens 的静态 JSX（生成独立可粘贴的代码字符串，而非依赖 `ThemedComponentPreview` 内部实现）
-- [ ] 评估：是否需要为 Phase 1 的 motion 效果同步生成代码（复杂度高，可放到 Phase 2 后半段）
+- [x] Token 导出：风格详情页新增「复制 CSS 变量」（`:root { --sc-*: ... }`）与「复制 Tailwind 配置」（`theme.extend` 含 colors/borderRadius/boxShadow/fontFamily）按钮 —— `src/lib/codeExport.ts` 的 `tokensToCssVars()` / `tokensToTailwindConfig()`
+- [x] 单组件代码导出：组件详情页新增「复制 React 代码」按钮（`componentToReactCode()`），输出内嵌当前风格 tokens 的独立 TSX：
+  - 16 个高频组件（buttons / content-card / badges / text-input / search-input / toggle-switch / modal-dialog / toast-notifications / alert-banner / progress-bar / stat-card / navbar / sign-in-form / table-basic / tabs / pagination）有**专属模板**，视觉与预览一致
+  - 其余 29 个组件导出通用脚手架（tokens 精确 + `states` 注释），预览页脚注会提示是专属模板还是脚手架
+  - 已用 esbuild 校验：45 个组件 × 有/无 motion 参数，生成代码全部为合法 TSX
+- [x] motion 代码同步生成：导出的组件代码尾部附带当前调参面板的 spring/enter/hover/press 参数（注释形式，配合 `npm i motion` 使用）
 
-**验收标准**：用户在组件详情页可以拿到一段可以直接粘进 React 项目、且视觉与预览一致的代码。
+**验收标准**：用户在组件详情页可以拿到一段可以直接粘进 React 项目、且视觉与预览一致的代码。—— ✅ 16 个专属模板组件已满足；其余为「tokens 精确 + 结构自行调整」的脚手架，可按需求逐个补模板。
 
-### Phase 3：动效参数开放调试
+### Phase 3：动效参数开放调试 —— ✅ 已完成（2026-07-02）
 
 **目标**：把「改动画」从返工变成实时调参。
 
-- [ ] 新增 `MotionPanel` 组件（滑块面板）：`duration`、`damping`、`stiffness`、`delay`、`scale`、`opacity` 等
-- [ ] 面板改动实时应用到当前预览（不落库，仅会话内生效）
-- [ ] 「保存为自定义 preset」→ 可在导出代码/Prompt 时带出具体参数值
-- [ ] 挂载位置：组件详情页 + Agent Studio 生成结果页（生成后允许微调节奏）
+- [x] 新增 `MotionPanel` 组件（`src/components/motion/MotionPanel.tsx`）：8 个滑块 —— stiffness / damping / mass / 进场时长 / 进场延迟 / hover 缩放 / 按下缩放 / hover 上浮，另有 4 个 preset 快捷切换（干脆/沉稳/弹性/无）+ 重播进场 + 重置
+- [x] 实时应用：`MotionOverrideContext`（`MotionPrimitives.tsx`）—— 面板通过 Provider 下发完整 `MotionPreset`，`MotionEnter`/`MotionLift`/`MotionButton` 优先读取 context 覆盖值，无需在 45 个预览渲染函数中穿 props；仅会话内生效，不落库
+- [x] 参数导出：面板内「复制动效代码」输出 framer-motion 的 `spring`/`enter`/`hover`/`press` 常量与用法示例（`motionParamsToCode()`）；同时随组件 React 代码导出一并带出
+- [x] 挂载位置：组件详情页（预览下方常驻）+ Agent Studio 生成结果页（折叠面板，生成后自动按匹配风格初始化 preset）
+- 状态管理：`src/hooks/useMotionTuning.ts`（独立 hook 文件，规避 react-refresh lint 限制），`replayKey` 用于 remount 预览重播进场动画
 
-**验收标准**：拖动阻尼/时长滑块，预览动效实时变化，且能导出带这些参数的代码。
+**验收标准**：拖动阻尼/时长滑块，预览动效实时变化，且能导出带这些参数的代码。—— ✅ 已满足。
 
 ### Phase 4：多风格 / 方案组合对比
 
@@ -199,11 +203,11 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 └── Phase 0：✅ 已完成，v0.3.0 已发布
 
 高价值 / 中等成本（建议紧接着做）
-└── Phase 1：动效系统  ← 🔶 首批已实现（未发布），剩余覆盖面见第 5 节
-└── Phase 3：参数调试面板  ← 和 Phase 1 强耦合，建议合并规划、分批交付
+└── Phase 1：动效系统  ← ✅ 已完成并随 v0.4.0 发布
+└── Phase 3：参数调试面板  ← ✅ 已完成（2026-07-02）
 
 中价值 / 视资源投入
-└── Phase 2：代码直出
+└── Phase 2：代码直出  ← ✅ 首批已完成（16 个专属模板 + 29 个脚手架 + token 导出）
 └── Phase 4：多方案对比
 
 长期 / 战略性
@@ -211,7 +215,7 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 └── Phase 6：工程化协作基础（若确定要拉人一起开发，优先级应提前）
 ```
 
-**下一步建议**：收尾并发布 Phase 1 的动效系统（版本号建议 `v0.4.0`），随后可直接衔接 Phase 3（参数调试面板）——两者强耦合，UI 层可以复用同一套 `MotionPreset` 结构；若近期计划邀请协作者，可将 Phase 6 的分支保护与 CI 提前插入。
+**下一步建议**：Phase 1（v0.4.0）、Phase 2、Phase 3 均已落地，建议以 `v0.5.0` 发布代码直出 + 动效调参。之后可选：为剩余 29 个组件补专属代码模板（Phase 2 深化）、Phase 4 多方案对比、或直接投入 Phase 5 的真实模型联调；若近期计划邀请协作者，可将 Phase 6 的分支保护与 CI 提前插入。
 
 ---
 

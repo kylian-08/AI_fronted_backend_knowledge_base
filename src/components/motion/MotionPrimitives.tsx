@@ -1,7 +1,30 @@
-import type { CSSProperties, ReactNode } from 'react'
+import { createContext, useContext, type CSSProperties, type ReactNode } from 'react'
 import { motion } from 'motion/react'
-import { MOTION_PRESETS, type MotionPresetKey } from '@/lib/motion/presets'
+import { MOTION_PRESETS, type MotionPreset, type MotionPresetKey } from '@/lib/motion/presets'
 import { cn } from '@/lib/utils'
+
+/**
+ * Phase 3 (Motion Parameter Debugging): when a `MotionPanel` is tuning
+ * parameters, it provides a full `MotionPreset` through this context and
+ * every motion primitive below it uses these values instead of its own
+ * `preset` prop — no prop-drilling through 45 preview renderers required.
+ */
+const MotionOverrideContext = createContext<MotionPreset | null>(null)
+
+export function MotionOverrideProvider({
+  value,
+  children,
+}: {
+  value: MotionPreset | null
+  children: ReactNode
+}) {
+  return <MotionOverrideContext.Provider value={value}>{children}</MotionOverrideContext.Provider>
+}
+
+function useResolvedPreset(preset: MotionPresetKey): MotionPreset {
+  const override = useContext(MotionOverrideContext)
+  return override ?? MOTION_PRESETS[preset]
+}
 
 interface MotionEnterProps {
   preset?: MotionPresetKey
@@ -14,15 +37,18 @@ interface MotionEnterProps {
 
 /** Fade + slight rise on mount. Intensity/speed driven by the resolved preset. */
 export function MotionEnter({ preset = 'none', delay = 0, className, style, children }: MotionEnterProps) {
-  const p = MOTION_PRESETS[preset]
-  const rise = preset === 'none' ? 0 : 6
+  const override = useContext(MotionOverrideContext)
+  const p = override ?? MOTION_PRESETS[preset]
+  // While tuning (override active), always show the rise so slider changes stay visible.
+  const rise = override ? 6 : preset === 'none' ? 0 : 6
+  const baseDelay = (p.enter as { delay?: number }).delay ?? 0
   return (
     <motion.div
       className={className}
       style={style}
       initial={{ opacity: 0, y: rise }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ ...p.enter, delay }}
+      transition={{ ...p.enter, delay: baseDelay + delay }}
     >
       {children}
     </motion.div>
@@ -39,7 +65,7 @@ interface MotionLiftProps {
 
 /** Hover elevation + tap feedback for clickable cards. Wraps in a div. */
 export function MotionLift({ preset = 'none', className, style, children }: MotionLiftProps) {
-  const p = MOTION_PRESETS[preset]
+  const p = useResolvedPreset(preset)
   return (
     <motion.div
       className={className}
@@ -71,7 +97,7 @@ export function MotionButton({
   type = 'button',
   disabled,
 }: MotionButtonProps) {
-  const p = MOTION_PRESETS[preset]
+  const p = useResolvedPreset(preset)
   return (
     <motion.button
       type={type}

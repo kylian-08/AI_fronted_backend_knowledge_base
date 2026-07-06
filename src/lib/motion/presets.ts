@@ -133,3 +133,56 @@ export function resolveMotionPresetKeyFromTokens(tokens: Record<string, string>)
 export function resolveMotionPresetFromTokens(tokens: Record<string, string>): MotionPreset {
   return MOTION_PRESETS[resolveMotionPresetKeyFromTokens(tokens)]
 }
+
+/* ------------------------------------------------------------------ */
+/* Phase 3 (Motion Parameter Debugging): flat, slider-friendly params  */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Flat representation of a `MotionPreset` — every field maps 1:1 to a
+ * slider in the `MotionPanel` and to a literal in exported code.
+ */
+export interface MotionParams {
+  stiffness: number
+  damping: number
+  mass: number
+  /** Entrance duration in seconds. */
+  enterDuration: number
+  /** Extra entrance delay in seconds. */
+  enterDelay: number
+  hoverScale: number
+  pressScale: number
+  /** Vertical lift in px on hover (negative = up). */
+  hoverLift: number
+}
+
+export function presetToParams(key: MotionPresetKey): MotionParams {
+  const p = MOTION_PRESETS[key]
+  const spring = p.spring as { stiffness?: number; damping?: number; mass?: number }
+  const enter = p.enter as { duration?: number; delay?: number }
+  return {
+    stiffness: spring.stiffness ?? 400,
+    damping: spring.damping ?? 30,
+    mass: spring.mass ?? 1,
+    enterDuration: enter.duration ?? 0.25,
+    enterDelay: enter.delay ?? 0,
+    hoverScale: p.hoverScale,
+    pressScale: p.pressScale,
+    hoverLift: p.hoverLift,
+  }
+}
+
+export function paramsToPreset(params: MotionParams): MotionPreset {
+  return {
+    spring: {
+      type: 'spring',
+      stiffness: params.stiffness,
+      damping: params.damping,
+      mass: params.mass,
+    },
+    enter: { duration: params.enterDuration, delay: params.enterDelay, ease: [0.22, 1, 0.36, 1] },
+    hoverScale: params.hoverScale,
+    pressScale: params.pressScale,
+    hoverLift: params.hoverLift,
+  }
+}
