@@ -32,7 +32,13 @@ export function StyleCard({ style, className }: StyleCardProps) {
             className="h-[150px] w-full object-cover"
           />
         ) : (
-          <ShowcaseShell style={style} compact previewOnly />
+          // pointer-events-none: the thumbnail's own button/card slots carry their own
+          // hover motion (MotionButton/MotionLift) — without this, hovering them would
+          // stack their scale on top of the card-level MotionLift below, making the
+          // "jelly" feel and hover-scale amount inconsistent depending on cursor position.
+          <div className="pointer-events-none">
+            <ShowcaseShell style={style} compact previewOnly />
+          </div>
         )}
         {style.source === 'imported' && (
           <span className="absolute right-2 top-2 rounded-full bg-primary/80 px-2 py-0.5 text-[10px] font-medium text-primary-foreground">

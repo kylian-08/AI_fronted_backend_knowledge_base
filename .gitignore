@@ -32,3 +32,4 @@ public/search-index.json
 
 # Packaged binaries (distributed via GitHub Releases)
 release/
+/*.exe
