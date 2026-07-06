@@ -36,7 +36,29 @@ export interface StyleItem extends CatalogItem {
    * table or tag heuristic — see `src/lib/motion/presets.ts`.
    */
   motionPreset?: 'snappy' | 'editorial' | 'bouncy' | 'none'
+  /**
+   * Ambient background animation key (Dynamic Styles). Unlike
+   * `motionPreset` (which only reacts to hover/press/enter), this plays
+   * continuously behind the showcase content — see `src/lib/dynamic/effects.ts`.
+   * Absent = no ambient animation (the vast majority of styles).
+   */
+  dynamicEffect?: DynamicEffectKey
 }
+
+export type DynamicEffectKey =
+  | 'aurora'
+  | 'mesh'
+  | 'pulse-glow'
+  | 'shimmer'
+  | 'scanlines'
+  | 'grid-pulse'
+  | 'wave'
+  | 'neon-flicker'
+  | 'blob-morph'
+  | 'particle-network'
+  | 'starfield'
+  | 'matrix-rain'
+  | 'cursor-glow'
 
 export interface ComponentItem extends CatalogItem {
   kind: 'component'

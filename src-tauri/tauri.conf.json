@@ -10,7 +10,7 @@
   "app": {
     "windows": [
       {
-        "title": "Prompt Assistant v0.5.1",
+        "title": "Prompt Assistant v0.6.0",
         "width": 1280,
         "height": 800,
         "resizable": true

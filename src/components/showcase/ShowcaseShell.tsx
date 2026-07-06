@@ -9,6 +9,7 @@ import {
 import { isGlassStyle } from '@/components/showcase/styleUtils'
 import { MotionEnter } from '@/components/motion/MotionPrimitives'
 import { resolveMotionPresetKey } from '@/lib/motion/presets'
+import { DynamicSurface } from '@/components/dynamic/DynamicSurface'
 import { cn } from '@/lib/utils'
 
 const ALL_SLOTS = [
@@ -50,48 +51,51 @@ export function ShowcaseShell({ style, className, compact, previewOnly }: Showca
           backgroundColor: isGradient ? undefined : bg,
           padding: previewOnly ? '10px' : compact ? '12px' : '20px',
           minHeight: previewOnly ? '140px' : compact ? '200px' : '320px',
+          overflow: 'hidden',
         }}
       >
-        <div
-          className={cn(
-            'grid gap-3',
-            previewOnly
-              ? 'grid-cols-2'
-              : compact
+        <DynamicSurface effect={style.dynamicEffect} tokens={style.tokens}>
+          <div
+            className={cn(
+              'grid gap-3',
+              previewOnly
                 ? 'grid-cols-2'
-                : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-          )}
-        >
-          {slots.map(({ id, label, Component }, index) => (
-            <MotionEnter key={id} preset={preset} delay={index * 0.05}>
-              <div
-                className={cn(
-                  isGlass
-                    ? previewOnly
-                      ? 'p-1'
-                      : 'p-2'
-                    : cn(
-                        'rounded-lg border border-white/10 bg-black/10 backdrop-blur-sm',
-                        previewOnly ? 'p-2' : 'p-3',
-                      ),
-                )}
-              >
-                {!previewOnly && (
-                  <p
-                    className={cn(
-                      'mb-2 text-xs font-medium uppercase tracking-wide',
-                      !isGlass && 'text-white/60',
-                    )}
-                    style={isGlass ? { color: style.tokens['--sc-muted-fg'] } : undefined}
-                  >
-                    {label}
-                  </p>
-                )}
-                <Component tokens={style.tokens} compact={previewOnly || compact} preset={preset} />
-              </div>
-            </MotionEnter>
-          ))}
-        </div>
+                : compact
+                  ? 'grid-cols-2'
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+            )}
+          >
+            {slots.map(({ id, label, Component }, index) => (
+              <MotionEnter key={id} preset={preset} delay={index * 0.05}>
+                <div
+                  className={cn(
+                    isGlass
+                      ? previewOnly
+                        ? 'p-1'
+                        : 'p-2'
+                      : cn(
+                          'rounded-lg border border-white/10 bg-black/10 backdrop-blur-sm',
+                          previewOnly ? 'p-2' : 'p-3',
+                        ),
+                  )}
+                >
+                  {!previewOnly && (
+                    <p
+                      className={cn(
+                        'mb-2 text-xs font-medium uppercase tracking-wide',
+                        !isGlass && 'text-white/60',
+                      )}
+                      style={isGlass ? { color: style.tokens['--sc-muted-fg'] } : undefined}
+                    >
+                      {label}
+                    </p>
+                  )}
+                  <Component tokens={style.tokens} compact={previewOnly || compact} preset={preset} />
+                </div>
+              </MotionEnter>
+            ))}
+          </div>
+        </DynamicSurface>
       </div>
     </div>
   )

@@ -1,6 +1,11 @@
 import type { StyleItem } from '@/types/catalog'
 import { baseStyles } from './baseStyles'
 import { curatedStyles } from './curatedStyles'
+import { dynamicStyles } from './dynamicStyles'
+// Relative import (not the `@/` alias): this module is also executed directly
+// via `tsx scripts/export-search-index.ts`, which doesn't resolve tsconfig
+// path aliases for real (non `import type`) runtime imports.
+import { appendCodeSampleToPrompt } from '../../lib/codeExport'
 
 const CATEGORIES = [
   { key: 'modern', zh: '现代风格', en: 'Modern', tags: ['modern', 'clean'] },
@@ -122,13 +127,16 @@ function generateVariant(index: number): StyleItem {
 
 /**
  * Detailed curated styles lead the catalog, followed by the hand-crafted base
- * styles, then programmatic palette variants for breadth.
+ * styles, the curated Dynamic Styles (ambient/animated backgrounds), and
+ * finally a reduced set of programmatic palette variants for pure color
+ * breadth (halved from 60 — Dynamic Styles now cover the "many more
+ * variants" role for anything that benefits from visual distinctiveness).
  */
-const PALETTE_VARIANT_COUNT = 60
+const PALETTE_VARIANT_COUNT = 30
 
 export function generateAllStyles(): StyleItem[] {
   const generated = Array.from({ length: PALETTE_VARIANT_COUNT }, (_, i) => generateVariant(i))
-  return [...curatedStyles, ...baseStyles, ...generated]
+  return [...curatedStyles, ...dynamicStyles, ...baseStyles, ...generated].map(appendCodeSampleToPrompt)
 }
 
 export const generatedStyles = generateAllStyles()
@@ -144,6 +152,11 @@ export function buildStyleRegistry() {
       name: { 'zh-CN': '核心设计系统', 'en-US': 'Core Design Systems' },
       key: 'core',
       items: baseStyles.map((s) => s.id),
+    },
+    dynamic: {
+      name: { 'zh-CN': '动态风格', 'en-US': 'Dynamic Styles' },
+      key: 'dynamic',
+      items: dynamicStyles.map((s) => s.id),
     },
   }
 

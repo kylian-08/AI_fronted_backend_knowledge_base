@@ -50,6 +50,31 @@ export function tokensToCssVars(tokens: Tokens, styleName?: string): string {
   ].join('\n')
 }
 
+/** Bare `:root { ... }` block, no header/usage comments — meant for embedding elsewhere (e.g. prompts). */
+function tokensToCssVarsBlock(tokens: Tokens): string {
+  const lines = orderedEntries(tokens).map(([k, v]) => `  ${k}: ${v};`)
+  return [':root {', ...lines, '}'].join('\n')
+}
+
+/**
+ * Appends a ready-to-paste CSS variables block to a style's prompt text, so
+ * that copying the prompt into any AI/dev tool carries exact color/token
+ * values alongside the free-text description — not just a verbal summary
+ * that's open to interpretation. Applied once to all bundled styles at
+ * catalog build time (see `generateAllStyles()`); left untouched for
+ * user-imported styles so we never double-append.
+ */
+export function appendCodeSampleToPrompt(style: StyleItem): StyleItem {
+  const cssBlock = tokensToCssVarsBlock(style.tokens)
+  return {
+    ...style,
+    prompt: {
+      'zh-CN': `${style.prompt['zh-CN']}\n\n对应 CSS 变量（可直接使用，确保生成结果的配色/圆角/字体与设计完全一致）：\n\`\`\`css\n${cssBlock}\n\`\`\``,
+      'en-US': `${style.prompt['en-US']}\n\nCorresponding CSS variables (use directly to keep colors/radius/font exactly on-spec):\n\`\`\`css\n${cssBlock}\n\`\`\``,
+    },
+  }
+}
+
 export function tokensToTailwindConfig(tokens: Tokens, styleName?: string): string {
   const fontStack = (tokens['--sc-font'] ?? 'Inter, system-ui, sans-serif')
     .split(',')

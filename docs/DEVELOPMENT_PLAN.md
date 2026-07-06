@@ -1,6 +1,6 @@
 # Prompt Assistant 开发文档 / Roadmap
 
-> 最后更新：2026-07-02　当前版本：**`v0.4.0`**（Phase 1 动效系统首批实现，已 commit，见第 5 节）
+> 最后更新：2026-07-06　当前版本：**`v0.6.0`**（新增动态风格 Dynamic Styles + Prompt 自动附带代码，见第 5 节）
 >
 > 本文档面向：项目维护者本人、未来加入的协作者、以及需要快速理解现状再继续开发的 AI Agent。
 > **约定**：每完成一个 Phase 的收尾工作，回来更新本文档的「当前状态」「版本历史」两节，并把对应 Phase 的 checklist 打勾。
@@ -11,7 +11,7 @@
 
 Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的 **AI 提示词与界面设计工作台**，围绕四条主线：
 
-1. **风格库**：97 种 UI 视觉风格（32 精选 + 5 核心 + 60 程序化变体），可直接「应用」到本应用换肤，也可导出 Prompt / 参考图供 AI 生成代码用。
+1. **风格库**：91 种 UI 视觉风格（32 精选 + 24 动态风格 + 5 核心 + 30 程序化变体），可直接「应用」到本应用换肤，也可导出 Prompt / 参考图供 AI 生成代码用；每个风格的 Prompt 尾部自动附带对应 CSS 变量代码块。
 2. **组件库**：45 个常见 UI 组件模板，预览随当前风格动态换肤，预览文案支持中英文，支持导入自定义组件。
 3. **组合与生成**：Prompt 组合器（风格 + 组件 + 后端手动拼装，含搜索与分类）与 **AI Agent Studio**（描述需求 → Agent 自动编排出可交互界面方案）。
 4. **后端模板**：11 个结构化 Prompt（NestJS / Express / FastAPI / Django / Gin / Spring）。
@@ -26,7 +26,7 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 
 | 目录 | 内容 | 数量 | 导入/导出 |
 |------|------|------|-----------|
-| `data/styles` | `curatedStyles.ts`(32 精选) + `baseStyles.ts`(5 核心) + `generator.ts`(60 程序化变体) | 97 | ✅ 支持 JSON 导入（含 `prompt` + `referenceImage`），存 `localStorage` |
+| `data/styles` | `curatedStyles.ts`(32 精选) + `dynamicStyles.ts`(24 动态风格) + `baseStyles.ts`(5 核心) + `generator.ts`(30 程序化变体，并统一调用 `codeExport.ts#appendCodeSampleToPrompt` 追加 CSS 代码块) | 91 | ✅ 支持 JSON 导入（含 `prompt` + `referenceImage`），存 `localStorage`；导入项不会被重复追加代码块 |
 | `data/components` | 5 个手写对象 + 40 个通过 `C()` 构造器生成 | 45 | ✅ 支持 JSON 导入，存 `localStorage` |
 | `data/backend` | Node / Python / Go / Java 四类 | 11 | ❌ 暂无导入导出 |
 | `data/architecture` | 占位数据 | 1（占位） | — |
@@ -162,6 +162,23 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 
 **验收标准**：拖动阻尼/时长滑块，预览动效实时变化，且能导出带这些参数的代码。—— ✅ 已满足。
 
+### Phase 3.5：动态风格（Dynamic Styles）+ Prompt 代码直出 —— ✅ 已完成（2026-07-06，`v0.6.0`）
+
+**背景**：本人反馈「提示词只有文字描述不够准确」「希望有动态效果的 UI 风格，替换掉后面的换色变体」。
+
+- [x] `StyleItem.dynamicEffect?` 新字段（`DynamicEffectKey`，13 种）；`ShowcaseShell` 统一渲染，覆盖风格列表缩略图与详情页预览
+- [x] 三类动画引擎：
+  - CSS-only（`src/components/dynamic/dynamicEffects.css`）：`aurora` / `mesh` / `pulse-glow` / `shimmer` / `scanlines` / `grid-pulse` / `wave` / `neon-flicker` / `blob-morph`，全部由共享 `@keyframes` + 每实例 CSS 变量（`--dyn-a/b/c`）驱动，避免重复生成 keyframe 字符串
+  - Canvas（`src/components/dynamic/canvasEffects.tsx` + `useCanvasLoop.ts`）：`particle-network` / `starfield` / `matrix-rain`，共享 `rAF` + `ResizeObserver` 尺寸适配
+  - 交互式（`cursor-glow`）：`DynamicSurface` 在容器上监听 `mousemove`，通过 ref 直写 CSS 变量驱动径向渐变位置，不触发 React re-render；容器 `pointer-events-none`（如卡片缩略图）时会退化为静态定位，不影响详情页的完整交互
+- [x] `dynamicStyles.ts`：24 个双语动态风格内容，覆盖全部 13 种引擎，兼顾深色/浅色、科技/治愈等不同气质
+- [x] 风格分类新增「动态」Tab（`styleCatalog.ts` / `heuristicProvider.ts` 同步）
+- [x] `generator.ts`：程序化调色变体从 60 精简到 30（作纯配色补充），总风格数 91
+- [x] `codeExport.ts#appendCodeSampleToPrompt`：在 `generateAllStyles()` 中对全部内置风格（精选/动态/核心/变体）统一追加 CSS 变量代码块到 Prompt 尾部；用户导入风格不做二次追加，避免重复
+- [x] 已知限制（记录以便后续优化）：Canvas 效果未接入 `IntersectionObserver`，多个动态风格同时出现在同一页（分页上限 24）时仍会持续渲染；后续如有性能反馈可补充可见性判断后暂停/恢复动画
+
+**验收标准**：风格列表与详情页能实时看到循环播放的动态背景；复制任意内置风格的 Prompt，末尾包含可直接使用的 CSS 变量代码块。—— ✅ 已满足。
+
 ### Phase 4：多风格 / 方案组合对比
 
 **目标**：从「单一方案」升级到「决策依据」。
@@ -169,7 +186,8 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 - [ ] 「品牌方向库」：在现有 32 精选风格之上，按气质重新打标签分组（如 `极简秩序` / `科技叙事` / `编辑画册` / `实验视觉`），而非仅按色相
 - [ ] 组合器 / 风格页新增「方案对比」视图：同一组件集合，2～4 个风格并排展示
 - [ ] Agent Studio 支持「一次生成多个方案」（复用 `local-heuristic`，取 top-N 候选风格而非只取最高分）
-- [ ] 评估 60 个程序化调色变体是否需要精简或重新分组（同质化问题历史反馈已提出）
+- [x] 评估 60 个程序化调色变体是否需要精简或重新分组 —— ✅ v0.6.0 已处理：精简至 30 个作纯配色补充，腾出的名额由 24 个「动态风格」（Dynamic Styles，见 Phase 3.5）填补，缓解同质化问题
+- [ ] 「品牌方向库」分组仍待实现（本条目未完成，见上）
 
 **验收标准**：用户能在一屏内直接对比至少 2 套完整方案（风格+组件+动效），而不是来回切换标签页。
 
@@ -208,6 +226,7 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 
 中价值 / 视资源投入
 └── Phase 2：代码直出  ← ✅ 首批已完成（16 个专属模板 + 29 个脚手架 + token 导出）
+└── Phase 3.5：动态风格 + Prompt 代码直出  ← ✅ 已完成并随 v0.6.0 发布
 └── Phase 4：多方案对比
 
 长期 / 战略性
@@ -215,7 +234,7 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 └── Phase 6：工程化协作基础（若确定要拉人一起开发，优先级应提前）
 ```
 
-**下一步建议**：Phase 1（v0.4.0）、Phase 2、Phase 3 均已落地，建议以 `v0.5.0` 发布代码直出 + 动效调参。之后可选：为剩余 29 个组件补专属代码模板（Phase 2 深化）、Phase 4 多方案对比、或直接投入 Phase 5 的真实模型联调；若近期计划邀请协作者，可将 Phase 6 的分支保护与 CI 提前插入。
+**下一步建议**：Phase 1～3.5 均已落地（`v0.4.0`～`v0.6.0`）。之后可选：为剩余 29 个组件补专属代码模板（Phase 2 深化）、Canvas 动态效果补充 `IntersectionObserver` 可见性优化、Phase 4 多方案对比、或直接投入 Phase 5 的真实模型联调；若近期计划邀请协作者，可将 Phase 6 的分支保护与 CI 提前插入。
 
 ---
 
@@ -223,7 +242,7 @@ Prompt Assistant 是一个跨平台（Web / PWA / Docker / Tauri 桌面端）的
 
 1. **Rive 是否引入**：建议仅在 Phase 4 之后，针对 2～3 个「旗舰演示风格」按需引入，不作为默认渲染引擎（成本高、维护重）。
 2. **远程 Agent 用哪家模型**：影响 `remote-llm` provider 的具体实现细节（是否需要支持多个 Provider 并存、密钥如何在桌面端安全存储，目前是明文存 `localStorage`，生产化前需重新评估）。
-3. **60 个程序化调色变体是否保留**：与 Phase 4 的「品牌方向库」重新分组会有冲突，需要先决定是精简还是重新包装。
+3. ~~60 个程序化调色变体是否保留~~ —— 已在 `v0.6.0` 决策：精简至 30 个保留，24 个替换为动态风格；Phase 4 的「品牌方向库」分组仍待评估是否覆盖动态风格。
 4. **是否需要多人实时协作 / 账号体系**（当前是纯前端 + localStorage，无后端）：如果后续要做用户账号、跨设备同步生成历史，需要补一个轻量后端，这是当前架构里唯一缺失的一层。
 5. **是否/何时邀请外部协作者**：决定 Phase 6 的优先级；若近期就要拉人，建议先做分支保护 + CI 再开放 `Write` 权限。
 

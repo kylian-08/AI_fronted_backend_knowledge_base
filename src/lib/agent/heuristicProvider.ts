@@ -45,7 +45,7 @@ const SECTION_LABELS: Record<AgentSectionKind, { 'zh-CN': string; 'en-US': strin
   custom: { 'zh-CN': '自定义区块', 'en-US': 'Custom section' },
 }
 
-const STYLE_BUCKET_KEYS: StyleBucket[] = ['signature', 'core', 'variant', 'imported']
+const STYLE_BUCKET_KEYS: StyleBucket[] = ['signature', 'dynamic', 'core', 'variant', 'imported']
 
 function scoreStyle(style: StyleItem, brief: AgentBrief): number {
   const haystack = [

@@ -37,7 +37,7 @@ npm run validate:prompts
 
 所有目录项（风格、组件、后端）通过 `src/data/*/registry.ts` 管理：
 
-- **StyleItem**：包含 `tokens`（CSS 变量）、`referenceImage`（参考图）、`showcaseVariant`
+- **StyleItem**：包含 `tokens`（CSS 变量）、`referenceImage`（参考图）、`showcaseVariant`、`motionPreset?`（动效性格）、`dynamicEffect?`（动态风格背景动画 key）
 - **ComponentItem**：包含 `previewType`（react/html/jsx）、`previewSource`（预览代码）
 - **BackendItem**：包含 `framework`、`patterns`
 
@@ -83,6 +83,18 @@ interface LocalizedText {
 - **运行时**：使用 Fuse.js 对 `searchIndex` 进行模糊搜索
 - 搜索字段：`title`、`description`、`tags`、`category`
 
+### 动态风格（Dynamic Styles）
+
+- 数据：`src/data/styles/dynamicStyles.ts`（24 个，`category: 'dynamic'`）
+- 引擎：`src/components/dynamic/`（CSS keyframes + Canvas + 光标追光交互）
+- 预览：`ShowcaseShell` 通过 `DynamicSurface` 在内容下层渲染循环动画
+- 分类 Tab：`styleCatalog.ts` 的 `dynamic` bucket
+
+### Prompt 代码直出
+
+- `src/lib/codeExport.ts` 的 `appendCodeSampleToPrompt()` 在 `generateAllStyles()` 时为全部内置风格 Prompt 末尾追加 CSS 变量代码块
+- 风格详情页另支持复制完整 CSS / Tailwind 配置；组件详情页支持复制 React 代码
+
 ### 组件预览系统
 
 组件卡片（`ComponentCard.tsx`）支持动态预览：
@@ -96,14 +108,14 @@ interface LocalizedText {
 
 ### 添加新风格
 
-1. 在 `src/data/styles/curatedStyles.ts` 或 `baseStyles.ts` 添加条目
+1. 在 `src/data/styles/curatedStyles.ts`、`dynamicStyles.ts` 或 `baseStyles.ts` 添加条目
 2. 必需字段：
    - `id`、`slug` - 唯一标识
    - `title`、`description`、`prompt` - 双语文本
    - `tokens` - CSS 变量对象，key 必须与主题系统兼容
    - `tags`、`category` - 用于筛选和搜索
    - `status` - `'ready'` | `'draft'` | `'placeholder'`
-3. 可选：`referenceImage`（base64 或 URL）、`showcaseVariant`
+3. 可选：`referenceImage`（base64 或 URL）、`showcaseVariant`、`motionPreset`、`dynamicEffect`（动态风格专用，见 `DynamicEffectKey`）
 
 ### 添加新组件
 

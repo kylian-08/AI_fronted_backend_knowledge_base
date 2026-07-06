@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router-dom'
 import { AppProvider } from '@/contexts/AppContext'
 import { router } from '@/routes'
 import './index.css'
+import './components/dynamic/dynamicEffects.css'
 
 /**
  * Older builds (v0.1.x) registered a PWA service worker that gets persisted in the

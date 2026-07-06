@@ -1,0 +1,179 @@
+/**
+ * Dynamic Styles ambient background engine.
+ *
+ * Each `.dyn-*` class is a reusable CSS-only animation, parameterized by a
+ * small set of inline custom properties (`--dyn-a/b/c`, `--dyn-duration`,
+ * `--dyn-opacity`) set per-instance in `DynamicBackground.tsx`. Keyframes are
+ * defined once here and shared across every style/card that uses them,
+ * instead of generating per-instance keyframe strings.
+ *
+ * All effects render as an absolutely-positioned, `pointer-events: none`
+ * layer meant to sit behind real content (see `DynamicSurface`).
+ */
+
+.dyn-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+/* ---------------------------------------------------------------- */
+/* Aurora — slow drifting multi-stop gradient sweep                  */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-aurora-drift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.dyn-aurora {
+  background: linear-gradient(120deg, var(--dyn-a), var(--dyn-b), var(--dyn-c), var(--dyn-b), var(--dyn-a));
+  background-size: 320% 320%;
+  animation: dyn-aurora-drift var(--dyn-duration, 14s) ease-in-out infinite;
+  filter: blur(36px) saturate(150%);
+  opacity: var(--dyn-opacity, 0.55);
+}
+
+/* ---------------------------------------------------------------- */
+/* Mesh — three blurred blobs drifting independently                 */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-mesh-a { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(8%, 10%) scale(1.18); } }
+@keyframes dyn-mesh-b { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-10%, -6%) scale(1.12); } }
+@keyframes dyn-mesh-c { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(6%, -8%) scale(1.08); } }
+.dyn-mesh span {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(46px);
+  opacity: var(--dyn-opacity, 0.6);
+}
+.dyn-mesh span:nth-child(1) { width: 55%; height: 55%; left: -12%; top: -12%; background: var(--dyn-a); animation: dyn-mesh-a var(--dyn-duration, 11s) ease-in-out infinite; }
+.dyn-mesh span:nth-child(2) { width: 50%; height: 50%; right: -12%; bottom: -12%; background: var(--dyn-b); animation: dyn-mesh-b calc(var(--dyn-duration, 11s) * 1.3) ease-in-out infinite; }
+.dyn-mesh span:nth-child(3) { width: 36%; height: 36%; left: 35%; top: 28%; background: var(--dyn-c); animation: dyn-mesh-c calc(var(--dyn-duration, 11s) * 1.6) ease-in-out infinite; }
+
+/* ---------------------------------------------------------------- */
+/* Pulse glow — a soft breathing ring of light                       */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px 0 var(--dyn-a); opacity: 0.5; }
+  50% { box-shadow: 0 0 70px 16px var(--dyn-a); opacity: 0.9; }
+}
+.dyn-pulse-glow::after {
+  content: '';
+  position: absolute;
+  inset: 12%;
+  border-radius: inherit;
+  animation: dyn-pulse-glow var(--dyn-duration, 3.2s) ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- */
+/* Shimmer — a diagonal light sweep across the surface                */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-shimmer-sweep {
+  0% { transform: translateX(-130%) skewX(-15deg); }
+  100% { transform: translateX(230%) skewX(-15deg); }
+}
+.dyn-shimmer::after {
+  content: '';
+  position: absolute;
+  top: -30%;
+  bottom: -30%;
+  width: 32%;
+  background: linear-gradient(90deg, transparent, var(--dyn-a), transparent);
+  opacity: var(--dyn-opacity, 0.5);
+  animation: dyn-shimmer-sweep var(--dyn-duration, 3s) ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- */
+/* Scanlines — retro CRT lines drifting downward                     */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-scanlines-drift {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 40px; }
+}
+.dyn-scanlines {
+  background-image: repeating-linear-gradient(to bottom, var(--dyn-a) 0, var(--dyn-a) 1px, transparent 1px, transparent 4px);
+  opacity: var(--dyn-opacity, 0.16);
+  animation: dyn-scanlines-drift 2.4s linear infinite;
+}
+
+/* ---------------------------------------------------------------- */
+/* Grid pulse — sci-fi HUD grid breathing in and out                 */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-grid-pulse {
+  0%, 100% { opacity: 0.22; }
+  50% { opacity: 0.6; }
+}
+.dyn-grid {
+  background-image:
+    linear-gradient(var(--dyn-a) 1px, transparent 1px),
+    linear-gradient(90deg, var(--dyn-a) 1px, transparent 1px);
+  background-size: 26px 26px;
+  animation: dyn-grid-pulse var(--dyn-duration, 3s) ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- */
+/* Wave — a soft undulating band anchored at the bottom               */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-wave-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.dyn-wave-track {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 200%;
+  height: 60%;
+  display: flex;
+  animation: dyn-wave-drift var(--dyn-duration, 10s) linear infinite;
+}
+.dyn-wave-track svg { width: 50%; height: 100%; flex-shrink: 0; }
+
+/* ---------------------------------------------------------------- */
+/* Neon flicker — imperfect neon-sign glow                           */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-neon-flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.35; }
+}
+.dyn-neon::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 44px var(--dyn-a);
+  animation: dyn-neon-flicker 4.2s infinite;
+}
+
+/* ---------------------------------------------------------------- */
+/* Blob morph — a single organic shape continuously reshaping         */
+/* ---------------------------------------------------------------- */
+@keyframes dyn-blob-morph {
+  0%, 100% { border-radius: 42% 58% 62% 38% / 45% 40% 60% 55%; }
+  50% { border-radius: 60% 40% 34% 66% / 55% 65% 35% 45%; }
+}
+.dyn-blob span {
+  position: absolute;
+  inset: 8%;
+  background: linear-gradient(135deg, var(--dyn-a), var(--dyn-b));
+  opacity: var(--dyn-opacity, 0.5);
+  filter: blur(1px);
+  animation: dyn-blob-morph var(--dyn-duration, 7s) ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- */
+/* Cursor glow — interactive radial spotlight following the pointer   */
+/* ---------------------------------------------------------------- */
+.dyn-cursor-glow {
+  background: radial-gradient(260px circle at var(--dyn-x, 50%) var(--dyn-y, 30%), var(--dyn-a), transparent 70%);
+  opacity: var(--dyn-opacity, 0.6);
+}
+
+/* Canvas-based effects (particle-network / starfield / matrix-rain) just
+   need the layer positioned; drawing happens in JS. */
+.dyn-canvas-layer canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
